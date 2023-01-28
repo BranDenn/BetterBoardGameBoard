@@ -1,6 +1,11 @@
 import tkinter
 import customtkinter
 import random
+#import RPi.GPIO as GPIO
+#import board?
+#import neopixel
+
+#LEDstrip = neopixel.NeoPixel(board.D18, 9, brightness = 1)
 
 # TICTACTOE VARS
 player = ''
@@ -23,8 +28,10 @@ def update_board(position) -> None: # updates board position with player data
     
   if player == 'o': # updates position colors and disable button
     app.winfo_children()[position + 1].configure(fg_color = "blue", state = "disabled", text = "o")
+    #LEDstrip[position] = (0, 0, 255)
   else:
     app.winfo_children()[position + 1].configure(fg_color = "red", state = "disabled", text = "x")
+    #LEDstrip[position] = (255, 0, 0)
 
   check_win()
   
@@ -57,6 +64,7 @@ def start() -> None: # initializes the board
   global player
 
   board = [''] * 9 # clears board
+  #LEDstrip.fill((50, 50, 50))
 
   for i in range(1, 10):
     app.winfo_children()[i].configure(fg_color = "black", state = "normal", text = "")
@@ -80,9 +88,12 @@ def next_player() -> None: # set next player
   update_label(player + "'s turn!")
 
 def set_button_win_color(positions : list) -> None:
-  app.winfo_children()[positions[0] + 1].configure(fg_color = "yellow")
-  app.winfo_children()[positions[1] + 1].configure(fg_color = "yellow")
-  app.winfo_children()[positions[2] + 1].configure(fg_color = "yellow")
+  app.winfo_children()[positions[0] + 1].configure(fg_color = "white")
+  app.winfo_children()[positions[1] + 1].configure(fg_color = "white")
+  app.winfo_children()[positions[2] + 1].configure(fg_color = "white")
+  #LEDstrip[positions[0]] = (255, 255, 255)
+  #LEDstrip[positions[1]] = (255, 255, 255)
+  #LEDstrip[positions[2]] = (255, 255, 255)
 
 def check_row() -> bool: # check row win
   if board[0] == player and board[1] == player and board[2] == player:
