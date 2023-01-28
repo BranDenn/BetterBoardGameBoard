@@ -8,7 +8,7 @@ board = []
 # TICTACTOE VARS
 
 customtkinter.set_appearance_mode("system")  # Modes: system (default), light, dark
-customtkinter.set_default_color_theme("blue")  #Themes: blue (default), dark-blue, green
+#customtkinter.set_default_color_theme("blue")  #Themes: blue (default), dark-blue, green
 
 app = customtkinter.CTk()  # create CTk window like you do with the Tk window
 app.title("TicTacToe Debug")
@@ -22,9 +22,9 @@ def update_board(position) -> None: # updates board position with player data
   board[position] = player
     
   if player == 'o': # updates position colors and disable button
-    app.winfo_children()[position + 1].configure(fg_color = "blue", state = "disabled")
+    app.winfo_children()[position + 1].configure(fg_color = "blue", state = "disabled", text = "o")
   else:
-    app.winfo_children()[position + 1].configure(fg_color = "red", state = "disabled")
+    app.winfo_children()[position + 1].configure(fg_color = "red", state = "disabled", text = "x")
 
   check_win()
   
@@ -39,11 +39,12 @@ def create_buttons() -> None: # creates 3x3 grid with their own position ID
 
       btn = customtkinter.CTkButton(master = app,
                                     hover_color = "gray",
-                                    fg_color = "black",
                                     text = "",
                                     command = button_function,
                                     width = 128,
-                                    height = 128)
+                                    height = 128,
+                                    font = ("Arial", 96)
+                                    )
       btn.grid(row = row, column = col, sticky = "nsew", padx = 8, pady = 8)
 
     offset += 2
@@ -58,7 +59,7 @@ def start() -> None: # initializes the board
   board = [''] * 9 # clears board
 
   for i in range(1, 10):
-    app.winfo_children()[i].configure(fg_color = "black", state = "normal")
+    app.winfo_children()[i].configure(fg_color = "black", state = "normal", text = "")
 
   rand_player = random.randint(0, 1) # randomly select player
   if rand_player == 0:
