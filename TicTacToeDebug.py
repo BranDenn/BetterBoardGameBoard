@@ -12,18 +12,19 @@ customtkinter.set_default_color_theme("blue")  #Themes: blue (default), dark-blu
 
 app = customtkinter.CTk()  # create CTk window like you do with the Tk window
 app.title("TicTacToe Debug")
-app.geometry("384x416")
+app.geometry("432x496")
+app.resizable(False, False)
 
-label = customtkinter.CTkLabel(master=app)
-label.place(relx=0.5, rely=0.9, anchor=tkinter.CENTER)
+label = customtkinter.CTkLabel(master = app, font = ("Arial", 64))
+label.place(relx=0.5, rely=1.0, anchor=tkinter.S)
 
 def update_board(position) -> None: # updates board position with player data
   board[position] = player
     
   if player == 'o': # updates position colors and disable button
-    app.winfo_children()[position +   1].configure(fg_color = "blue", state = "disabled")
+    app.winfo_children()[position + 1].configure(fg_color = "blue", state = "disabled")
   else:
-    app.winfo_children()[position +   1].configure(fg_color = "red", state = "disabled")
+    app.winfo_children()[position + 1].configure(fg_color = "red", state = "disabled")
 
   check_win()
   
@@ -33,17 +34,17 @@ def create_buttons() -> None: # creates 3x3 grid with their own position ID
   for row in range(3):
     for col in range(3):
 
-      def button_function(x=row + col + offset): # each has its own function with position ID
+      def button_function(x = row + col + offset): # each has its own function with position ID
         return update_board(x)
 
       btn = customtkinter.CTkButton(master = app,
-                                    hover_color = "white",
+                                    hover_color = "gray",
                                     fg_color = "black",
                                     text = "",
                                     command = button_function,
-                                    width = 64,
-                                    height = 64)
-      btn.grid(row = row, column = col, sticky = "nsew", padx = 32, pady = 32)
+                                    width = 128,
+                                    height = 128)
+      btn.grid(row = row, column = col, sticky = "nsew", padx = 8, pady = 8)
 
     offset += 2
 
@@ -127,11 +128,11 @@ def check_win() -> None:
   if check_row() or check_col() or check_diag(): # checks all cases for player to win
     for i in range(1, 10):
       app.winfo_children()[i].configure(state = "disabled")
-    update_label(player + " wins! Resetting Board...")
+    update_label(player + " wins!")
     label.after(1500, start)  # restart after 1.5s
 
   elif '' not in board: # checks if all spots are taken up and no one has won
-    update_label("DRAW! Resetting Board...")
+    update_label("DRAW!")
     label.after(1500, start)  # restart after 1.5s
 
   else: # if no one has won and the board is not full, go to next players turn
