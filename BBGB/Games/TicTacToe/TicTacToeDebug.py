@@ -5,8 +5,24 @@ from pyglet import media # used to output sounds
 #import RPi.GPIO as GPIO
 #import board?
 #import neopixel
+#import os
+#import json
 
 #LEDstrip = neopixel.NeoPixel(board.D18, 9, brightness = 1)
+
+# JSON SAVE?
+# WRITE CODE TO DISPLAY ALL SAVE JSON FILES HERE
+# allow user to pick save
+# if save is picked, open save file
+# with open('save.json', 'r') as save_file:
+#   data = json.load(save_file)
+# 
+# save format here ^ declare before
+# data = {"player" : '', "board" : []}
+# then call player using data["player"] to get 'o' etc
+#
+# JSON SAVE?
+
 
 # TICTACTOE VARS
 player = '' # declare player as character
