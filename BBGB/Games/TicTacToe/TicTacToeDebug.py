@@ -20,6 +20,8 @@ from pyglet import media # used to output sounds
 # save format here ^ declare before
 # data = {"player" : '', "board" : []}
 # then call player using data["player"] to get 'o' etc
+# with open("filename", "w") as save_file:
+#   json.dump({"player" : player, "board" : board}, save_file)
 #
 # JSON SAVE?
 
