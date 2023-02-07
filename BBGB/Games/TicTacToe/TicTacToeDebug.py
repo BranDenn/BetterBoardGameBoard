@@ -3,12 +3,12 @@ import customtkinter # Modern tkinter GUI library extention
 import random # used to randomize first player turn
 from pyglet import media # used to output sounds
 #import RPi.GPIO as GPIO
-#import board?
-#import neopixel
+import board?
+import neopixel
 #import os
 #import json
 
-#LEDstrip = neopixel.NeoPixel(board.D18, 9, brightness = 1)
+LEDstrip = neopixel.NeoPixel(board.D18, 9, brightness = 1)
 
 # JSON SAVE?
 # WRITE CODE TO DISPLAY ALL SAVE JSON FILES HERE
@@ -52,11 +52,11 @@ def update_board(position) -> None: # updates board position with player data
   if player == 'o': # updates position colors and disable button
     app.winfo_children()[position + 1].configure(fg_color = "blue", state = "disabled", text = "o") # turns pressed button to player color (o = blue) and disables button
     oSound.play() # play o player sound
-    #LEDstrip[position] = (0, 0, 255)
+    LEDstrip[position] = (0, 0, 255)
   else:
     app.winfo_children()[position + 1].configure(fg_color = "red", state = "disabled", text = "x") # turns pressed button to player color (x = red) and disables button
     xSound.play() # play x player sound
-    #LEDstrip[position] = (255, 0, 0)
+    LEDstrip[position] = (255, 0, 0)
 
   check_win()
   
@@ -94,7 +94,7 @@ def start() -> None: # initializes the board
   # ['', '', '', 
   #  '', '', '',
   #  '', '', '']
-  #LEDstrip.fill((50, 50, 50))
+  LEDstrip.fill((0, 0, 0))
 
   for i in range(1, 10): # loop through all buttons created (the range starts at 1 since the label counts as child 0)
     app.winfo_children()[i].configure(fg_color = "black", state = "normal", text = "")  # initialize every button back to normal so that it can be pressed again
@@ -121,9 +121,9 @@ def set_button_win_color(positions : list) -> None: # set the winning button col
   app.winfo_children()[positions[0] + 1].configure(fg_color = "white")
   app.winfo_children()[positions[1] + 1].configure(fg_color = "white")
   app.winfo_children()[positions[2] + 1].configure(fg_color = "white")
-  #LEDstrip[positions[0]] = (255, 255, 255)
-  #LEDstrip[positions[1]] = (255, 255, 255)
-  #LEDstrip[positions[2]] = (255, 255, 255)
+  LEDstrip[positions[0]] = (255, 255, 255)
+  LEDstrip[positions[1]] = (255, 255, 255)
+  LEDstrip[positions[2]] = (255, 255, 255)
 
 def check_row() -> bool: # check row win
   if board[0] == player and board[1] == player and board[2] == player: # if first row is all the same player
@@ -176,6 +176,7 @@ def check_win() -> None:
 
   elif '' not in board: # checks if all spots are taken up and no one has won
     update_label("DRAW!") # update notification label to show draw
+    LEDstrip.fill((255, 127, 0))
     label.after(1500, start)  # restart after game after 1.5s
 
   else: # if no one has won and the board is not full, go to next players turn
