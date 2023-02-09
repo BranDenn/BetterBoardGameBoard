@@ -1,8 +1,7 @@
 import tkinter # GUI library
 import customtkinter # Modern tkinter GUI library extention
 import random # used to randomize first player turn
-#from pyglet import media # used to output sounds
-import board?
+import board
 import neopixel
 
 # insert UART CODE HERE ---------------------------------------------------
