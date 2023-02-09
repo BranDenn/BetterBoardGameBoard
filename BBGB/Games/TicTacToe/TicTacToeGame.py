@@ -168,4 +168,5 @@ if __name__ == "__main__":
   # read and wait for value
   # when value is recieved update call update_board[position]
   # send acklowedgement to pico again
+  # update_board[int(uart.read())]
   
