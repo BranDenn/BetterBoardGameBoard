@@ -86,6 +86,7 @@ def start() -> None: # initializes the board
     player = 'x'
 
   update_label(player + "'s turn!") # show the player's turn on the notification label
+  app.update() # update gui manually
 
 def next_player() -> None: # set next player (same as player initialization, but without random player)
   global player
@@ -96,7 +97,6 @@ def next_player() -> None: # set next player (same as player initialization, but
     player = 'o'
 
   update_label(player + "'s turn!")
-  app.update() # update gui manually
 
 def set_button_win_color(positions : list) -> None: # set the winning button colors to white to clearly indicate the win
   app.winfo_children()[positions[0] + 1].configure(fg_color = "white")
@@ -164,6 +164,7 @@ def check_win() -> None:
 
   else: # if no one has won and the board is not full, go to next players turn
     next_player()
+    app.update() # update gui manually
 
 if __name__ == "__main__":
   create_buttons() # create buttons first (gui for tic-tac-toe board)
