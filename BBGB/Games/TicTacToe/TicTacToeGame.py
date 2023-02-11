@@ -3,17 +3,20 @@ import customtkinter # Modern tkinter GUI library extention
 import random # used to randomize first player turn
 import board
 import neopixel
+import serial
+from time import sleep
 
-# insert UART CODE HERE ---------------------------------------------------
+# init uart
+uart = serial.Serial("/dev/ttyS0", baudrate=115200, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE)
 
+# init LED strip
 LEDstrip = neopixel.NeoPixel(board.D18, 9, brightness = 1)
 
 # TICTACTOE VARS
 player = '' # declare player as character
 board = [] # declare board as array
 
-customtkinter.set_appearance_mode("system")  # Modes: system (default), light, dark
-#customtkinter.set_default_color_theme("blue")  #Themes: blue (default), dark-blue, green
+customtkinter.set_appearance_mode("dark")  # Modes: system (default), light, dark
 
 app = customtkinter.CTk() # create customtkinter gui app window
 app.title("TicTacToe Debug") # give name to app
@@ -93,6 +96,7 @@ def next_player() -> None: # set next player (same as player initialization, but
     player = 'o'
 
   update_label(player + "'s turn!")
+  app.update() # update gui manually
 
 def set_button_win_color(positions : list) -> None: # set the winning button colors to white to clearly indicate the win
   app.winfo_children()[positions[0] + 1].configure(fg_color = "white")
@@ -144,14 +148,19 @@ def check_diag() -> bool: # check diag win
   return False
 
 def check_win() -> None:
+  app.update()  # update gui manually
   if check_row() or check_col() or check_diag(): # checks all cases for player to win
     update_label(player + " wins!") # update notification label to show winner
-    label.after(1500, start)  # restart the game after 1.5s
+    app.update() # update gui manually
+    sleep(1.5) # wait 1.5 seconds
+    start() # restart game
 
   elif '' not in board: # checks if all spots are taken up and no one has won
     update_label("DRAW!") # update notification label to show draw
-    LEDstrip.fill((255, 127, 0))
-    label.after(1500, start)  # restart after game after 1.5s
+    LEDstrip.fill((255, 127, 0)) # light up whole board orange
+    app.update() # update gui manually
+    sleep(1.5) # wait 1.5 seconds
+    start() # restart game
 
   else: # if no one has won and the board is not full, go to next players turn
     next_player()
@@ -159,14 +168,8 @@ def check_win() -> None:
 if __name__ == "__main__":
   create_buttons() # create buttons first (gui for tic-tac-toe board)
   start() # start the game
-  app.mainloop() # allow tkinter gui to show and run
-  
-  # send acklowedgement to pico
-  
-  # while loop here:
-  # pico will find value to update
-  # read and wait for value
-  # when value is recieved update call update_board[position]
-  # send acklowedgement to pico again
-  # update_board[int(uart.read())]
+
+  while True:
+    position = int(uart.read()) # constantly wait for uart read
+    update_board[position] # once data is found, check the board position
   
