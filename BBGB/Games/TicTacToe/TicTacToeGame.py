@@ -172,5 +172,5 @@ if __name__ == "__main__":
 
   while True:
     position = int(uart.read()) # constantly wait for uart read
-    update_board[position] # once data is found, check the board position
+    update_board(position) # once data is found, check the board position
   
