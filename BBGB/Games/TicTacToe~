@@ -1,3 +1,5 @@
+# This file was previously deleted accidentally by Bryce :D
+
 import tkinter # GUI library
 from time import sleep
 import customtkinter # Modern tkinter GUI library extention 
