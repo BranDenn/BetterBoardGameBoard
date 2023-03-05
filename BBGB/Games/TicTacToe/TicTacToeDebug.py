@@ -3,20 +3,24 @@ import customtkinter # Modern tkinter GUI library extention
 import random # used to randomize first player turn
 #from pyglet import media # used to output sounds
 #import RPi.GPIO as GPIO
-import pygame
+from pygame import mixer
 import board
 import neopixel
 #import os
 #import json
 
-LEDstrip = neopixel.NeoPixel(board.D18, 9, brightness = 1)
+# 21 for no pwm interference
+LEDstrip = neopixel.NeoPixel(board.D21, 9, brightness = 1)
 
 #Inits for pygame audio
-path = "/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/"
-sound_files = ["Button_01.wav", "Button_02.wav", "YayWin.wav"]
-pygame.mixer.init()
-speaker_volume = 0.5
-pygame.mixer.music.set_volume(speaker_volume)
+mixer.init()
+
+win_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/YayWin.wav")
+p1_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/Button_01.wav")
+p2_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/Button_02.wav")
+
+# Need to declare the sound object that is being modified and then the value of the desired volume for the sound
+mixer.Sound.set_volume(win_sound, 0.05) 
 
 # JSON SAVE?
 # WRITE CODE TO DISPLAY ALL SAVE JSON FILES HERE
@@ -38,11 +42,6 @@ pygame.mixer.music.set_volume(speaker_volume)
 player = '' # declare player as character
 board = [] # declare board as array
 
-#winSound = media.load('Sounds\YayWin.wav', streaming = False) # create sounds for winning
-#oSound = media.load('Sounds\Button_01.wav', streaming = False) # create sounds for player turns
-#xSound = media.load('Sounds\Button_02.wav', streaming = False)
-# ------------------------------------------
-
 customtkinter.set_appearance_mode("system")  # Modes: system (default), light, dark
 #customtkinter.set_default_color_theme("blue")  #Themes: blue (default), dark-blue, green
 
@@ -59,11 +58,11 @@ def update_board(position) -> None: # updates board position with player data
     
   if player == 'o': # updates position colors and disable button
     app.winfo_children()[position + 1].configure(fg_color = "blue", state = "disabled", text = "o") # turns pressed button to player color (o = blue) and disables button
-    #oSound.play() # play o player sound
+    mixer.Sound.play(p1_sound)
     LEDstrip[position] = (0, 0, 255)
   else:
     app.winfo_children()[position + 1].configure(fg_color = "red", state = "disabled", text = "x") # turns pressed button to player color (x = red) and disables button
-    #xSound.play() # play x player sound
+    mixer.Sound.play(p2_sound)
     LEDstrip[position] = (255, 0, 0)
 
   check_win()
@@ -178,9 +177,9 @@ def check_win() -> None:
   if check_row() or check_col() or check_diag(): # checks all cases for player to win
     for i in range(1, 10): # if player wins make sure no buttons can pressed (prevents errors after game is supposed to be over)
       app.winfo_children()[i].configure(state = "disabled")
-    update_label(player + " wins!") # update notification label to show winner
-    pygame.mixer.music.load(path + "YayWin.wav") # play win sound
-    label.after(1500, start)  # restart the game after 1.5s
+      update_label(player + " wins!") # update notification label to show winner
+      mixer.Sound.play(win_sound)
+      label.after(1500, start)  # restart the game after 1.5s
 
   elif '' not in board: # checks if all spots are taken up and no one has won
     update_label("DRAW!") # update notification label to show draw
