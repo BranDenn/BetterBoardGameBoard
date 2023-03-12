@@ -3,29 +3,26 @@ import customtkinter # Modern tkinter GUI library extention
 import random # used to randomize first player turn
 from pygame import mixer
 from time import sleep
-#import board
-#import digitalio
-#import neopixel
+import board
+import digitalio
+import neopixel
 
 # 21 for no pwm interference
-#LEDstrip = neopixel.NeoPixel(board.D21, 42, brightness = 1)
+LEDstrip = neopixel.NeoPixel(board.D21, 42, brightness = 1)
 
 # Pins to toggle interrupt
-#player1_PIN = digitalio.DigitalInOut(board.D16)
-#player1_PIN.direction = digitalio.Direction.OUTPUT
+player1_PIN = digitalio.DigitalInOut(board.D16)
+player1_PIN.direction = digitalio.Direction.OUTPUT
 
-#player2_PIN = digitalio.DigitalInOut(board.D20)
-#player2_PIN.direction = digitalio.Direction.OUTPUT
+player2_PIN = digitalio.DigitalInOut(board.D20)
+player2_PIN.direction = digitalio.Direction.OUTPUT
 
 #Inits for pygame audio
 mixer.init()
 
-#win_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/YayWin.wav")
-#p1_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/Button_01.wav")
-#p2_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/Button_02.wav")
-win_sound = mixer.Sound("Sounds/YayWin.wav")
-p1_sound = mixer.Sound("Sounds/Button_01.wav")
-p2_sound = mixer.Sound("Sounds/Button_02.wav")
+win_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/YayWin.wav")
+p1_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/Button_01.wav")
+p2_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/Button_02.wav")
 
 # Need to declare the sound object that is being modified and then the value of the desired volume for the sound
 mixer.Sound.set_volume(win_sound, 0.05)
@@ -60,16 +57,16 @@ def update_board(position) -> None: # updates board position with player data
 		for i in range(ROW_COUNT):
 			if player == 'Blue': # updates position colors and disable button
 				app.winfo_children()[position + 1].configure(fg_color = "blue") # turns pressed button to player color (o = blue) and disables button
-				#LEDstrip[position] = (0, 0, 255)
+				LEDstrip[position] = (0, 0, 255)
 			else:
 				app.winfo_children()[position + 1].configure(fg_color = "red") # turns pressed button to player color (x = red) and disables button
-				#LEDstrip[position] = (255, 0, 0)
+				LEDstrip[position] = (255, 0, 0)
 			app.update()
 
 			if i < 5 and board[position + COL_COUNT] == '':
 				sleep(0.05)
 				app.winfo_children()[position + 1].configure(fg_color = "black")
-				#LEDstrip[position] = (0, 0, 0)
+				LEDstrip[position] = (0, 0, 0)
 				position += COL_COUNT
 				mixer.Sound.play(p1_sound)
 			else:
@@ -139,15 +136,15 @@ def next_player() -> None: # set next player (same as player initialization, but
 def set_button_win_color(winning_positions : list) -> None: # set the winning button colors to white to clearly indicate the win
 	for i in winning_positions:
 		app.winfo_children()[i + 1].configure(fg_color = "white")
-		#LEDstrip[winning_positions[i]] = (255, 255, 255)
+		LEDstrip[winning_positions[i]] = (255, 255, 255)
 	update_label(player + " connected %d!" % len(winning_positions)) # update notification label to show winner
 
-	# if player == 'Blue':
-	# 	player1_PIN.value = True
-	# 	player1_PIN.value = False
-	# else:
-	# 	player2_PIN.value = True
-	# 	player2_PIN.value = False
+	if player == 'Blue':
+		player1_PIN.value = True
+		player1_PIN.value = False
+	else:
+		player2_PIN.value = True
+		player2_PIN.value = False
 
 def check_row(position : int) -> bool: # check row win
 	winning_positions = [position]
