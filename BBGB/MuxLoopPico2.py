@@ -33,14 +33,14 @@ player2_pin.irq(update_player2, Pin.IRQ_RISING) # call update_player2 function o
 
 # Init vibration
 vibration_timer = Timer() # timer for vibration
-
 vibrate = Pin(5, Pin.OUT)
-def stop_vibration(time):
+
+def stop_vibration(time) -> None:
     print("stopping vibration")
     vibrate.value(0)
 
-def vibration():
-    time = 1000
+def vibration() -> None:
+    time = 2500
     print("starting vibration for ", time, "ms")
     vibrate.value(1)
     vibration_timer.init(mode = Timer.ONE_SHOT, period = time, callback = stop_vibration) 
@@ -53,7 +53,8 @@ uart = UART(0, baudrate=115200, tx=Pin(0), rx=Pin(1))
 uart.init(baudrate=115200, bits=8, parity=None, stop=1)
 
 # Sensor Positions
-HFX_POSITIONS = [50, 51, 52, 57, 58, 59, 60, 61, 62, 63]
+#HFX_POSITIONS = [50, 51, 52, 57, 58, 59, 60, 61, 62, 63]
+HFX_POSITIONS = [0, 1, 2, 3, 4, 5, 6]
 
 # Init LCD
 spi = SPI(1, baudrate=20000000, polarity=0, phase=0,
@@ -62,15 +63,15 @@ tft=TFT(spi, 14, 15, 16)
 tft.initr()
 tft.rgb(True)
 
-def update_display() -> void:
-    tft.text((5, 10), "Player 1 Points: %d" %player1_wins, TFT.WHITE, sysfont, 1)
-    tft.text((5, 25), "Player 2 Points: %d" %player2_wins, TFT.WHITE, sysfont, 1)
+def update_display() -> None:
+    tft.text((5, 15), "Blue Points: %d" %player1_wins, TFT.WHITE, sysfont, 1)
+    tft.text((5, 30), "Red Points: %d" %player2_wins, TFT.WHITE, sysfont, 1)
 
 tft.fill(TFT.BLACK)
 update_display()
 
 while True:   
-    for count in range(10):
+    for count in range(len(HFX_POSITIONS)):
          # SET MUX_PINS BASED OFF COUNT
         Pin(MUX_PINS[0]).value(count & 0x01)
         Pin(MUX_PINS[1]).value(count & 0x02)
@@ -79,10 +80,10 @@ while True:
         reading = Sig.read_u16()
 
             # get the adc reading
-        print("MUX 3 ADC ", count, " : ", reading)
+        print("MUX 0 ADC ", count, " : ", reading)
             
-        if reading < 50000: # if reading is lower than adc value
+        if reading < 45000: # if reading is lower than adc value
             uart.write(b'%d'%HFX_POSITIONS[count]) # send count data to PI
             print("SENT DATA FOR HFX PIN: ", HFX_POSITIONS[count])
 
-        time.sleep(0.5) # sleep for a short time (0.1s)
+        time.sleep(0.1) # sleep for a short time (0.1s)
