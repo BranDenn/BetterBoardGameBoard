@@ -6,6 +6,10 @@ from time import sleep
 import board
 import digitalio
 import neopixel
+import serial
+
+# init uart
+uart = serial.Serial("/dev/ttyS0", baudrate=115200, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE)
 
 # 21 for no pwm interference
 LEDstrip = neopixel.NeoPixel(board.D21, 66, brightness = 0.25)
@@ -57,9 +61,6 @@ def update_board(position) -> None: # updates board position with player data
     LEDoffset = 2
     
     if board[position] == '':
-        for i in range(1, 43):
-            app.winfo_children()[i].configure(state = "disabled")
-
         for i in range(ROW_COUNT):
             if player == 'Blue': # updates position colors and disable button
                 app.winfo_children()[position + 1].configure(fg_color = "blue") # turns pressed button to player color (o = blue) and disables button
@@ -105,6 +106,7 @@ def create_buttons() -> None: # creates 3x3 grid with their own position ID
                                             command = button_function,
                                             width = 64,
                                             height = 64,
+                                            state = "disabled"
                                             ) 
             btn.grid(row = row, column = col, sticky = "nsew", padx = 8, pady = 8)
 
@@ -121,7 +123,7 @@ def start() -> None: # initializes the board
     LEDstrip.fill((0, 0, 0))
 
     for i in range(1, 43): # loop through all buttons created (the range starts at 1 since the label counts as child 0)
-        app.winfo_children()[i].configure(fg_color = "black", state = "normal")  # initialize every button back to normal so that it can be pressed again
+        app.winfo_children()[i].configure(fg_color = "black")  # initialize every button back to normal so that it can be pressed again
 
     rand_player = random.randint(0, 1) # randomly select player
     if rand_player == 0: # 50 % chance start with player 'o'
@@ -131,6 +133,8 @@ def start() -> None: # initializes the board
     create_border()
 
     update_label(player + "'s turn!") # show the player's turn on the notification label
+    uart.flushInput()
+    app.update()
 
 def create_border() -> None:
     if player == 'Blue':
@@ -294,24 +298,29 @@ def check_diag(position : int) -> bool: # check diag win
     return False
 
 def check_win(position : int) -> None:
+    app.update()
     if check_row(position) or check_col(position) or check_diag(position): # checks all cases for player to win
-        for i in range(1, 43): # if player wins make sure no buttons can pressed (prevents errors after game is supposed to be over)
-            app.winfo_children()[i].configure(state = "disabled")
-
         mixer.Sound.play(win_sound)
-        label.after(2500, start)  # restart the game after 1.5s
+        app.update() # update gui manually
+        sleep(2.5) # wait 1.5 seconds
+        start() # restart game
 
     elif '' not in board: # checks if all spots are taken up and no one has won
         update_label("DRAW!") # update notification label to show draw
         LEDstrip.fill((255, 127, 0))
-        label.after(2500, start)  # restart after game after 1.5s
+        app.update() # update gui manually
+        sleep(2.5) # wait 1.5 seconds
+        start() # restart game
 
     else: # if no one has won and the board is not full, go to next players turn
         next_player()
-        for i in range(1, 43):
-            app.winfo_children()[i].configure(state = "normal")
+        app.update()
 
 if __name__ == "__main__":
     create_buttons() # create buttons first (gui for tic-tac-toe board)
     start() # start the game
-    app.mainloop() # allow tkinter gui to show and run
+    
+    while True:
+        position = int(uart.read()) # constantly wait for uart read
+        update_board(position) # once data is found, check the board position
+
