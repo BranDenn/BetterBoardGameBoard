@@ -55,6 +55,7 @@ uart.init(baudrate=115200, bits=8, parity=None, stop=1)
 # Sensor Positions
 #HFX_POSITIONS = [50, 51, 52, 57, 58, 59, 60, 61, 62, 63]
 HFX_POSITIONS = [0, 1, 2, 3, 4, 5, 6]
+#HFX_POSITIONS = [0, 1, 9, 10, 11, 12, 13]
 
 # Init LCD
 spi = SPI(1, baudrate=20000000, polarity=0, phase=0,
@@ -83,7 +84,10 @@ while True:
         print("MUX 0 ADC ", count, " : ", reading)
             
         if reading < 45000: # if reading is lower than adc value
-            uart.write(b'%d'%HFX_POSITIONS[count]) # send count data to PI
+            if(HFX_POSITIONS[count] > 9):
+                uart.write('t') # send count data to PI
+
+            uart.write(b'%d'%HFX_POSITIONS[count]) # send count data to PI           uart.write('hello')
             print("SENT DATA FOR HFX PIN: ", HFX_POSITIONS[count])
 
         time.sleep(0.1) # sleep for a short time (0.1s)
