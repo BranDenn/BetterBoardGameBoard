@@ -1,6 +1,7 @@
 # BetterBoardGameBoard
 
 Python pip install commands:<br />
-pip install tk<br />
-pip install customtkinter<br />
-pip instal pyglet<br />
+sudo pip3 install adafruit-blinka<br />
+sudo pip3 install adafruit-circuitpython-neopixel<br />
+sudo pip install tk<br />
+sudo pip install customtkinter<br />
