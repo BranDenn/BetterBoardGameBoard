@@ -1,6 +1,4 @@
 import serial
-import subprocess
-import sys
 import board
 import neopixel
 import time
@@ -53,11 +51,9 @@ if __name__ == "__main__":
     match game: # once uart character is found, check match case
       case '0':
         print("Launching Tic-Tac-Toe")
-        subprocess.run(['ls', '-la'])  # run shell command to launch specific game code
-        sys.exit(0)                    # then exit this current code
+        exec(open('file.py').read()) # execute game
       case '1':
         print("Launching Connect4+")
-        subprocess.run(['ls', '-la'])
-        sys.exit(0)
+        exec(open('file.py').read()) # execute game
       case _:
         print("No such game exists")
