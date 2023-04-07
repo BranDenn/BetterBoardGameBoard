@@ -50,14 +50,16 @@ if __name__ == "__main__":
   while True:
     game = uart.read() # constantly wait for uart read
   
-    match game: # once uart character is found, check match case
-      case '0':
+    # once uart character is found, check game variable
+    if game == b'0':
         print("Launching Tic-Tac-Toe")
-        subprocess.run(['ls', '-la'])  # run shell command to launch specific game code
+        with open("Connect4DebugPi.py") as f: # run shell command to launch specific game code
+            exec(f.read())  
         sys.exit(0)                    # then exit this current code
-      case '1':
-        print("Launching Connect4+")
-        subprocess.run(['ls', '-la'])
-        sys.exit(0)
-      case _:
+    elif game == b'1':
+        print("Launching Connect-4")
+        with open("Connect4Pi.py") as f: # run shell command to launch specific game code
+            exec(f.read())  
+        sys.exit(0)                    # then exit this current code
+    else:
         print("No such game exists")
