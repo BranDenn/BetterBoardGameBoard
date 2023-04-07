@@ -1,6 +1,4 @@
 import serial
-import subprocess
-import sys
 import board
 import neopixel
 import time
@@ -53,6 +51,7 @@ if __name__ == "__main__":
     # once uart character is found, check game variable
     if game == b'0':
         print("Launching Tic-Tac-Toe")
+<<<<<<< HEAD
         with open("Connect4DebugPi.py") as f: # run shell command to launch specific game code
             exec(f.read())  
         sys.exit(0)                    # then exit this current code
@@ -62,4 +61,11 @@ if __name__ == "__main__":
             exec(f.read())  
         sys.exit(0)                    # then exit this current code
     else:
+=======
+        exec(open('file.py').read()) # execute game
+      case '1':
+        print("Launching Connect4+")
+        exec(open('file.py').read()) # execute game
+      case _:
+>>>>>>> 67191fbf4349e9f7fa1eecfcdd60987c0259e360
         print("No such game exists")
