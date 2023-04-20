@@ -58,6 +58,11 @@ def clear_color(position) -> None:
 	app.winfo_children()[position].configure(fg_color = "#000000")
 	LEDstrip[position] = (0, 0, 0)
 
+# erases all colors
+def clear_all() -> None:
+	for i in range(ROW_COUNT * COL_COUNT):
+		app.winfo_children()[i].configure(fg_color = "#000000")
+
 # updates pixel with color
 # GUI uses rgb to hex conversion
 # LEDs use rgb
@@ -145,21 +150,21 @@ create_buttons()
 # slider for red value
 red_slider = customtkinter.CTkSlider(app, from_=0, to=255, number_of_steps=255, 
 			     progress_color="red", button_color="white", button_hover_color="gray", command=set_r)
-red_slider.place(relx=0.45, rely=0.9, anchor=tkinter.S)
+red_slider.place(relx=0.5, rely=0.91, anchor=tkinter.S)
 
 # slider for green value
 green_slider = customtkinter.CTkSlider(app, from_=0, to=255, number_of_steps=255, 
 			     progress_color="green", button_color="white", button_hover_color="gray", command=set_g)
-green_slider.place(relx=0.45, rely=0.93, anchor=tkinter.S)
+green_slider.place(relx=0.5, rely=0.94, anchor=tkinter.S)
 
 # slider for blue value
 blue_slider = customtkinter.CTkSlider(app, from_=0, to=255, number_of_steps=255, 
 			     progress_color="blue", button_color="white", button_hover_color="gray", command=set_b)
-blue_slider.place(relx=0.45, rely=0.96, anchor=tkinter.S)
+blue_slider.place(relx=0.5, rely=0.97, anchor=tkinter.S)
 
 # canvas to display picked color
 canvas = customtkinter.CTkCanvas(app, width = 64, height = 64, bg = "white")
-canvas.place(relx=0.7, rely=0.96, anchor=tkinter.S)
+canvas.place(relx=0.75, rely=0.97, anchor=tkinter.S)
 
 # output button to generate the code output
 output_button = customtkinter.CTkButton(master = app,
@@ -171,7 +176,7 @@ output_button = customtkinter.CTkButton(master = app,
 										hover_color = "gray",
 										command = print_output
 										) 
-output_button.place(relx=0.9, rely=0.96, anchor=tkinter.S)
+output_button.place(relx=0.91, rely=0.98, anchor=tkinter.S)
 
 # random button to randomly pick a color
 random_button = customtkinter.CTkButton(master = app,
@@ -183,7 +188,19 @@ random_button = customtkinter.CTkButton(master = app,
 										hover_color = "gray",
 										command = set_random_color
 										) 
-random_button.place(relx=0.1, rely=0.96, anchor=tkinter.S)
+random_button.place(relx=0.23, rely=0.98, anchor=tkinter.S)
+
+# clear all button to erase all colors
+clear_button = customtkinter.CTkButton(master = app,
+										text = "clear all",
+										text_color = "black",
+										width = 64,
+										height = 64,
+										fg_color = "white",
+										hover_color = "gray",
+										command = clear_all
+										) 
+clear_button.place(relx=0.09, rely=0.98, anchor=tkinter.S)
 
 set_canvas()
 set_sliders()
