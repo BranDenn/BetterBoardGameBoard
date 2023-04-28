@@ -12,20 +12,32 @@ class Game():
         self.RED = [255, 0, 0]
         self.BLUE = [0, 0, 255]
         self.WHITE = [255, 255, 255]
+        #self.center = [self.disp.width // 2, self.disp.height // 2]
     
     def __del__(self) -> None:
         print(self.__class__.__name__, "has been destructed!")
 
-    def update_display(self, stats : dict) -> None:
+    def game_display(self, stats : dict) -> None:
+        self.draw.rectangle((0, 0, self.disp.width, self.disp.height), fill = (0, 0, 0))
         self.draw.rectangle((0, 0, 130, 30), fill = (255, 0, 0))
         self.draw.text((5, 7.5), self.__class__.__name__, font = self.font, fill = (255, 255, 255))
 
         for i in range(len(stats)):
             self.draw.text((10, 50 + (20 * i)), 
-                           (list(stats.keys())[i], ":", list(stats.values())[0]), 
+                           (list(stats.keys())[i], ":", list(stats.values())[i]), 
                            font = self.font, fill = (255, 255, 255))
         
         self.draw.text((5, 135), ("Hold Button for 2s"), font = self.font, fill = (255, 255, 255))
         self.draw.text((5, 145), ("to return to menu."), font = self.font, fill = (255, 255, 255))
+        self.disp.display(self.img)
+
+    def update_display(self, stats : dict) -> None:
+        self.draw.rectangle((10, 0, self.disp.width, self.disp.height - 30), fill = (0, 0, 0))
+
+        for i in range(len(stats)):
+            self.draw.text((10, 50 + (20 * i)), 
+                           (list(stats.keys())[i], ":", list(stats.values())[i]), 
+                           font = self.font, fill = (255, 255, 255))
+            
         self.disp.display(self.img)
         

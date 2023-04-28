@@ -6,7 +6,7 @@ class Connect4(Game):
     def __init__(self, leds = None, display = None, image = None, draw = None, font = None, uart = None) -> None:
         super().__init__(leds, display, image, draw, font)
         self.uart = uart
-        self.current_player = self.get_starting_player()
+        self.current_player
         self.leds.auto_write = True
         self.red_points = 0
         self.blue_points = 0
@@ -14,12 +14,12 @@ class Connect4(Game):
         self.GAME_COLUMNS = 7
         self.start_game()
 
-    def get_starting_player(self) -> list:
+    def set_starting_player(self) -> None:
         random_player = randint(0, 1)
         if random_player:
-            return self.RED
+            self.current_player = self.RED
         else:
-            return self.BLUE
+            self.current_player = self.BLUE
         
     def update_board(self, position : int) -> None:
         position = (position % self.COLUMNS) + (self.ROWS + self.ROWS)
@@ -166,7 +166,7 @@ class Connect4(Game):
     def check_win(self, position : int) -> None:
 
         if self.is_row_win(position) or self.is_col_win(position) or self.is_diag_win_1(position) or self.is_diag_win_2(position):
-            self.update_score()
+            self.update_score(1)
             sleep(2.5)
         
         elif self.OFF not in self.leds:
@@ -176,17 +176,18 @@ class Connect4(Game):
         else:
             self.next_player()
         
-    def update_score(self):
+    def update_score(self, points : int = 0):
         if self.current_player == self.RED:
-            self.red_points += 1
+            self.red_points += points
         else:
-            self.blue_points += 1
+            self.blue_points += points
 
         self.update_display({"Red Points" : self.red_points, "Blue Points" : self.blue_points})
 
     def start_game(self) -> None:
         self.leds.fill(self.OFF)
-        self.get_starting_player()
+        self.game_display({"Red Points" : self.red_points, "Blue Points" : self.blue_points})
+        self.set_starting_player()
         self.create_border(self.current_player)
 
     def game_loop(self) -> None:

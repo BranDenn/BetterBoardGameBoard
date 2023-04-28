@@ -44,7 +44,8 @@ img = Image.new('RGB', (disp.width, disp.height))
 draw = ImageDraw.Draw(img)
 
 # Load default font.
-font = ImageFont.load_default()
+#font = ImageFont.load_default()
+font = ImageFont.truetype("IBMPlexSans-SemiBold.ttf", 24)
 
 GAMES = ["Stacker", "Connect4+"]
 
@@ -128,12 +129,7 @@ def select(pin) -> None:
     global can_use
     global game
     global menu_mode
-    print('menu_mode:', menu_mode)
-    print(game)
-    
-#     if GPIO.input(ROTARY_PUSH) == previous_input:
-#         return
-    
+
     if menu_mode == 0:
         if not GPIO.input(ROTARY_PUSH) and can_use:
             can_use = False

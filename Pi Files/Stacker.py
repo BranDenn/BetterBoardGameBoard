@@ -12,6 +12,7 @@ class Stacker(Game):
         self.stop_movement = False
         self.leds.auto_write = False
         self.points = 0
+        self.game_display({"Points" : self.points})
 
     def move(self, row : int, length : int, color : list, delay : float) -> list:
         positions = [None] * length
@@ -52,7 +53,7 @@ class Stacker(Game):
                     
                     # turn on LEDs
                     for pos in range(length):
-                        positions[pos] = row * 11 + pos + column
+                        positions[pos] = row * self.ROWS + pos + column
                         self.leds[positions[pos]] = color
                     self.leds.show()
 
@@ -125,12 +126,11 @@ class Stacker(Game):
 
         return False
 
-    def update_score(self, points_amount : int) -> None:
+    def update_score(self, points_amount : int = 0) -> None:
         self.points += points_amount
         self.update_display({"Points" : self.points})
 
     def main_loop(self) -> None:
-        self.update_display({"Points" : self.points})
         while self.can_play:
             print("game started")
             current_length = self.STARTING_LENGTH
