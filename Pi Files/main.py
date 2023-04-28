@@ -77,6 +77,7 @@ def update_menu(value : bool) -> None:
 
     draw.rectangle((0, 48 + menu_position, 100, 63 + menu_position), fill = BLACK)
     draw.text((10, 50 + menu_position), (GAMES[menu_selection]), font = font, fill = WHITE)
+
     if not value:
         # Turned Right
         if menu_selection == menu_size:                   
@@ -185,7 +186,8 @@ def startup_display() -> None:
     reset_menu_data(len(GAMES) - 1, 0)
 
     draw.rectangle((0, 0, disp.width, disp.height), fill = BLACK)
-    draw.rectangle((0, 0, 130, 30), fill = BLUE)
+    draw.rectangle((0, 0, disp.width, 30), fill = BLUE)
+    draw.rectangle((0, disp.height - 30, disp.width, disp.height), fill = BLUE)
     draw.text((5, 7.5), "Game Select", font = font, fill = WHITE)
 
     draw.rectangle((12, 48, 100, 63), fill = WHITE)

@@ -19,7 +19,8 @@ class Game():
 
     def game_display(self, stats : dict) -> None:
         self.draw.rectangle((0, 0, self.disp.width, self.disp.height), fill = (0, 0, 0))
-        self.draw.rectangle((0, 0, 130, 30), fill = (255, 0, 0))
+        self.draw.rectangle((0, 0, self.disp.width, 30), fill = (255, 0, 0))
+        self.draw.rectangle((0, self.disp.height - 30, self.disp.width, self.disp.height), fill = (255, 0, 0))
         self.draw.text((5, 7.5), self.__class__.__name__, font = self.font, fill = (255, 255, 255))
 
         for i in range(len(stats)):
@@ -32,7 +33,7 @@ class Game():
         self.disp.display(self.img)
 
     def update_display(self, stats : dict) -> None:
-        self.draw.rectangle((10, 0, self.disp.width, self.disp.height - 30), fill = (0, 0, 0))
+        self.draw.rectangle((0, 50, self.disp.width, self.disp.height - 50), fill = (0, 0, 0))
 
         for i in range(len(stats)):
             self.draw.text((10, 50 + (20 * i)), 

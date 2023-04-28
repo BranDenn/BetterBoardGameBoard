@@ -192,5 +192,8 @@ class Connect4(Game):
 
     def game_loop(self) -> None:
         while self.can_play:
-            position = int(self.uart.read())
-            self.update_board(position)
+            position = self.uart.read()
+            if position:
+                self.update_board(int(position))
+            else:
+                print("connect 4 uart timed out, trying again...")
