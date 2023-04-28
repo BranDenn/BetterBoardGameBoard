@@ -45,7 +45,7 @@ draw = ImageDraw.Draw(img)
 # Load default font.
 font = ImageFont.load_default()
 
-GAMES = ["Stacker", "Tic Tac Toe", "Connect4+", "DrawIt!"]
+GAMES = ["Stacker", "Tic-Tac-Toe", "Connect4+", "DrawIt!"]
 
 # create default game as the animation
 game = Animations(LEDstrip)
@@ -77,7 +77,7 @@ def update_menu(value : bool) -> None:
     global menu_selection
 
     draw.rectangle((0, 48 + menu_position, 100, 63 + menu_position), fill = BLACK)
-    draw.text((5, 50 + menu_position), ("  " + GAMES[menu_selection]), font = font, fill = WHITE)
+    draw.text((10, 50 + menu_position), (GAMES[menu_selection]), font = font, fill = WHITE)
     if not value:
         # Turned Right
         if menu_selection == menu_size:                   
@@ -97,7 +97,7 @@ def update_menu(value : bool) -> None:
             
     draw.rectangle((12, 48 + menu_position, 100, 63 + menu_position), fill = WHITE)
     draw.rectangle((13, 49 + menu_position, 99, 62 + menu_position), fill = ORANGE)
-    draw.text((5, 50 + menu_position), ("  " + GAMES[menu_selection]), font = font, fill = WHITE)
+    draw.text((10, 50 + menu_position), GAMES[menu_selection], font = font, fill = WHITE)
     draw.text((5, 50 + menu_position), ">", font = font, fill = WHITE)
     disp.display(img)
     
@@ -137,8 +137,8 @@ def select(pin) -> None:
             can_use = False
             
             draw.rectangle((0, 135, disp.width, disp.height), fill = BLACK)
-            draw.text((5, 135), ("Launching..."), font = font, fill = WHITE)
-            draw.text((5, 147), (GAMES[menu_selection]), font = font, fill = WHITE)
+            draw.text((5, 135), ("Attempting to launch"), font = font, fill = WHITE)
+            draw.text((5, 145), GAMES[menu_selection] + "...", font = font, fill = WHITE)
             disp.display(img)
 
             uart.write(b'%d' % menu_selection)
@@ -180,7 +180,7 @@ def select(pin) -> None:
                 game.can_play = False
                 del game
                 launch_game(-1)
-                menu_mode = 0
+                startup_display()
                 time.sleep(1)
                 can_use = True
                 return
@@ -194,11 +194,12 @@ def startup_display() -> None:
 
     clearScreen()
     draw.rectangle((0, 0, 130, 30), fill = BLUE)
+    draw.text((5, 7.5), "Game Select", font = font, fill = WHITE)
+
     draw.rectangle((12, 48, 100, 63), fill = WHITE)
     draw.rectangle((13, 49, 99, 62), fill = ORANGE)
-    draw.text((5, 7.5), "Game Select", font = font, fill = WHITE)
     for i in range(0, menu_size + 1): # displays test for every game
-        draw.text((5, 50 + (20 * i)), ("  " + GAMES[i]), font = font, fill = WHITE)
+        draw.text((10, 50 + (20 * i)), GAMES[i], font = font, fill = WHITE)
     draw.text((5, 50), ">", font = font, fill = WHITE)
     disp.display(img)
     

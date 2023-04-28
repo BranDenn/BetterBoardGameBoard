@@ -3,8 +3,8 @@ from time import sleep
 from random import randint
 
 class Stacker(Game):
-    def __init__(self, leds = None, lcd = None) -> None:
-        super().__init__(leds, lcd)
+    def __init__(self, leds = None, display = None, image = None, draw = None, font = None) -> None:
+        super().__init__(leds, display, image, draw)
         self.STARTING_LENGTH = 3
         self.BLINK_AMOUNT = 2
         self.BLINK_SPEED = 0.20
@@ -12,6 +12,7 @@ class Stacker(Game):
         self.stop_movement = False
         self.leds.auto_write = False
         self.finished = False
+        self.points = 0
 
     def move(self, row : int, length : int, color : list, delay : float) -> list:
         positions = [None] * length
@@ -77,7 +78,7 @@ class Stacker(Game):
                 direction = 1
 
     def blink(self, positions_to_remove : list, color : list) -> None:
-        for i in range(self.BLINK_AMOUNT):
+        for _ in range(self.BLINK_AMOUNT):
             sleep(self.BLINK_SPEED)
             for pos in positions_to_remove:
                 self.leds[pos] = color
@@ -95,6 +96,7 @@ class Stacker(Game):
             self.leds.show()
 
     def main_loop(self) -> None:
+        self.update_display({"Points" : self.points})
         while self.can_play:
             print("game started")
             current_length = self.STARTING_LENGTH
@@ -120,10 +122,12 @@ class Stacker(Game):
                         self.blink(positions_to_remove, color)
                         print("yay")
                         current_length -= len(positions_to_remove)
-                        print(current_length)
 
                 sleep(0.1)
                 self.stop_movement = False
+                self.points += current_length
+                self.update_display({"Points" : self.points})
+
                 
                 if current_length < 1:
                     print("you lost")
