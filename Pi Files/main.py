@@ -29,6 +29,7 @@ GPIO.setmode(GPIO.BCM)
 ROTARY_PUSH = 13
 ROTARY_ROTATE = 19
 ROTARY_DIRECTION = 26
+can_use = True
 
 disp = ST7735.ST7735(port=0, cs=0, dc=24, backlight=None, rst=25, width=128, height=160, rotation=180, invert=False)
 # init uart
@@ -102,7 +103,11 @@ def update_menu(value : bool) -> None:
     
 # function called when rotary encoder is twisted
 def step(pin) -> None:
-    update_menu(GPIO.input(ROTARY_DIRECTION)) # update menu based on the direction pin value (left or right)
+    global can_use
+    if can_use:
+        can_use = False
+        update_menu(GPIO.input(ROTARY_DIRECTION)) # update menu based on the direction pin value (left or right)
+        can_use = True
 
 # launches appropriate game based on value
 def launch_game(selection : int) -> None:
@@ -112,28 +117,75 @@ def launch_game(selection : int) -> None:
         game = Stacker(LEDstrip)
     elif selection == 1:
         print("Launching Connect4+")
-        #subprocess.run(["python3", "Connect4DebugPi.py"])   
+        #subprocess.run(["python3", "Connect4DebugPi.py"])
+    else:
+        game = Animations(LEDstrip)
+        
    
 def select(pin) -> None:
+    global can_use
     global game
+    global menu_mode
+    print('menu_mode:', menu_mode)
+    print(game)
     
-    draw.rectangle((0, 135, disp.width, disp.height), fill = BLACK)
-    draw.text((5, 135), ("Launching..."), font = font, fill = WHITE)
-    draw.text((5, 147), (GAMES[menu_selection]), font = font, fill = WHITE)
-    disp.display(img)
+#     if GPIO.input(ROTARY_PUSH) == previous_input:
+#         return
+    
+    if menu_mode == 0:
+        if not GPIO.input(ROTARY_PUSH) and can_use:
+            can_use = False
+            
+            draw.rectangle((0, 135, disp.width, disp.height), fill = BLACK)
+            draw.text((5, 135), ("Launching..."), font = font, fill = WHITE)
+            draw.text((5, 147), (GAMES[menu_selection]), font = font, fill = WHITE)
+            disp.display(img)
 
-    print(menu_selection)
-    uart.flush()
-    uart.write(b'%d' % menu_selection)
-      
-    ack = uart.read()
-    print("ack:", ack)
+            uart.write(b'%d' % menu_selection)
+            ack = uart.read()
+            print("ack:", ack)
+            ack = b'0'
+            
+            if ack == b'0':
+                game.can_play = False
+                del game
+                #time.sleep(1)
+                launch_game(menu_selection)
+                menu_mode = 1
+                time.sleep(1)
+                can_use = True
+                return
+                
+            else:
+                 print('timed out :(')
+                 
+    elif menu_mode == 1:
+        print(menu_mode)
+        
+        start_time = time.time()
+        hold_time = 0
+        if not GPIO.input(ROTARY_PUSH) and can_use:
+            can_use = False
+            
+            while not GPIO.input(ROTARY_PUSH):
+                hold_time = time.time() - start_time
+                if hold_time >= 2:
+                    break
+            
+            if hold_time < 2:
+                if menu_selection == 0:
+                    game.stop_movement = True
+            else:
+                print("BROKEN")
+                game.can_play = False
+                del game
+                launch_game(-1)
+                menu_mode = 0
+                time.sleep(1)
+                can_use = True
+                return
     
-    if ack == b'a':
-        del game
-        launch_game(menu_selection)        
-    else:
-        print('timed out :(')
+    can_use = True
             
 # menu to display all the games (Tic-Tac-Toe, Connect4+, etc)
 def startup_display() -> None:
@@ -153,19 +205,29 @@ def startup_display() -> None:
 if __name__ == "__main__":
     startup_display()
     
+
+    print(dir(GPIO))
     GPIO.setup(ROTARY_PUSH, GPIO.IN, pull_up_down = GPIO.PUD_UP)
-    GPIO.add_event_detect(ROTARY_PUSH, GPIO.FALLING, callback = select, bouncetime=500)
     GPIO.setup(ROTARY_ROTATE, GPIO.IN, pull_up_down = GPIO.PUD_UP)
-    GPIO.add_event_detect(ROTARY_ROTATE, GPIO.FALLING, callback = step, bouncetime=150)
     GPIO.setup(ROTARY_DIRECTION, GPIO.IN, pull_up_down = GPIO.PUD_UP)
+    GPIO.add_event_detect(ROTARY_PUSH, GPIO.FALLING, callback = select, bouncetime = 100)
+    GPIO.add_event_detect(ROTARY_ROTATE, GPIO.FALLING, callback = step, bouncetime = 100)
     
     while True:
+
         try:
+            print(game)
             game.main_loop()
+            print("game ended")
+            time.sleep(0.5)
         except KeyboardInterrupt:
+            print("keyboard interrupt")
             break
-        except Exception:
+        except:
             print("could not run main_loop, trying again in 0.1s...")
             time.sleep(0.1)
-
+            
+GPIO.remove_event_detect(ROTARY_PUSH)
+GPIO.remove_event_detect(ROTARY_ROTATE)
 GPIO.cleanup()
+print("cleaned up!")

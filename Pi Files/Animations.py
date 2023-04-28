@@ -137,6 +137,7 @@ class Animations(Game):
             self.create_B(72, (0, 0, 0))
 
     def main_loop(self) -> None:
+        self.leds.auto_write = True
         while self.can_play:
             print("looping animation!")
             self.snake_animation() # delay, snake length, brightness
