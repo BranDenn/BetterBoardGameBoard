@@ -9,6 +9,9 @@ class Game():
         self.ROWS = 11
         self.COLUMNS = 11
         self.OFF = [0, 0, 0]
+        self.RED = [255, 0, 0]
+        self.BLUE = [0, 0, 255]
+        self.WHITE = [255, 255, 255]
     
     def __del__(self) -> None:
         print(self.__class__.__name__, "has been destructed!")

@@ -4,14 +4,13 @@ from random import randint
 
 class Stacker(Game):
     def __init__(self, leds = None, display = None, image = None, draw = None, font = None) -> None:
-        super().__init__(leds, display, image, draw)
+        super().__init__(leds, display, image, draw, font)
         self.STARTING_LENGTH = 3
         self.BLINK_AMOUNT = 2
         self.BLINK_SPEED = 0.20
         self.SPEED_DIVISOR = 50
         self.stop_movement = False
         self.leds.auto_write = False
-        self.finished = False
         self.points = 0
 
     def move(self, row : int, length : int, color : list, delay : float) -> list:
@@ -95,6 +94,41 @@ class Stacker(Game):
                 self.leds[pos] = desired_color
             self.leds.show()
 
+    def check_for_removal(self, row : int, positions : list, color : list) -> int:
+        positions_to_remove = []
+        if row < self.ROWS - 1:
+
+            for pos in positions:
+                # check if row under is free
+                if self.leds[pos + self.ROWS] == self.OFF:
+                    positions_to_remove.append(pos)
+                    self.leds[pos] = self.OFF
+                self.leds.show()
+
+            if positions_to_remove:
+                self.blink(positions_to_remove, color)
+        
+        return len(positions_to_remove)
+
+    def game_ended(self, row : int, length : int) -> bool:
+        if length < 1:
+            print("you lost :(")
+            self.highlight_positions(self.RED)
+            sleep(1)
+            return True
+
+        if row < 1:
+            print("you won :D")
+            self.highlight_positions(self.WHITE)
+            sleep(2)
+            return True
+
+        return False
+
+    def update_score(self, points_amount : int) -> None:
+        self.points += points_amount
+        self.update_display({"Points" : self.points})
+
     def main_loop(self) -> None:
         self.update_display({"Points" : self.points})
         while self.can_play:
@@ -105,44 +139,17 @@ class Stacker(Game):
                 print('row:', row)
                 color = [randint(0, 255), randint(0, 255), randint(0, 255)]
                 speed = (row + 1) / self.SPEED_DIVISOR
-                positions =  self.move(row, current_length, color, speed)
-
-                if row < self.ROWS - 1:
-                    positions_to_remove = []
-
-                    for pos in positions:
-                        # check if row under is free
-                        if self.leds[pos + 11] == self.OFF:
-                            positions_to_remove.append(pos)
-                            self.leds[pos] = self.OFF
-                        self.leds.show()
-
-                    if positions_to_remove:
-                        print("blink!")
-                        self.blink(positions_to_remove, color)
-                        print("yay")
-                        current_length -= len(positions_to_remove)
+                positions = self.move(row, current_length, color, speed)
+                current_length -= self.check_for_removal(row, positions, color)
 
                 sleep(0.1)
                 self.stop_movement = False
-                self.points += current_length
-                self.update_display({"Points" : self.points})
+                self.update_score(current_length)
 
                 
-                if current_length < 1:
-                    print("you lost")
-                    self.highlight_positions([255, 0, 0])
-                    sleep(1)
-                    break
-                
-                elif row < 1:
-                    print("you won")
-                    self.highlight_positions([255, 255, 255])
-                    sleep(2)
+                if self.game_ended(row, current_length):
                     break
             
             self.leds.fill(self.OFF)
             self.leds.show()
-        self.finished = True
-        print("done")
 

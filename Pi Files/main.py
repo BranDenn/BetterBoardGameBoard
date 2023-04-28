@@ -14,6 +14,7 @@ import RPi.GPIO as GPIO
 # GAME IMPORTS
 from Animations import Animations
 from Stacker import Stacker
+from Connect4 import Connect4
 
 RED = (0, 0, 255)
 GREEN = (0, 255, 0)
@@ -45,7 +46,7 @@ draw = ImageDraw.Draw(img)
 # Load default font.
 font = ImageFont.load_default()
 
-GAMES = ["Stacker", "Tic-Tac-Toe", "Connect4+", "DrawIt!"]
+GAMES = ["Stacker", "Connect4+"]
 
 # create default game as the animation
 game = Animations(LEDstrip)
@@ -68,9 +69,6 @@ def reset_menu_data(size : int, mode : int) -> None:
     menu_size = size
     menu_mode = mode
     
-def clearScreen() -> None:
-    draw.rectangle((0, 0, disp.width, disp.height), fill = BLACK) # fill colors are (Blue, Green, Red)
-
 # scrolls the menu either up or down and updates the global selection
 def update_menu(value : bool) -> None:
     global menu_position
@@ -114,14 +112,18 @@ def launch_game(selection : int) -> None:
     global game
     if selection == 0:
         print("Launching Stacker")
-        game = Stacker(LEDstrip)
+        game = Stacker(LEDstrip, disp, img, draw, font)
     elif selection == 1:
         print("Launching Connect4+")
-        #subprocess.run(["python3", "Connect4DebugPi.py"])
+        game = Connect4(LEDstrip, disp, img, draw, font, uart)
     else:
         game = Animations(LEDstrip)
         
-   
+def remove_game() -> None:
+    global game
+    game.can_play = False
+    del game  
+
 def select(pin) -> None:
     global can_use
     global game
@@ -146,10 +148,8 @@ def select(pin) -> None:
             print("ack:", ack)
             ack = b'0'
             
-            if ack == b'0':
-                game.can_play = False
-                del game
-                #time.sleep(1)
+            if ack:
+                remove_game()
                 launch_game(menu_selection)
                 menu_mode = 1
                 time.sleep(1)
@@ -160,8 +160,6 @@ def select(pin) -> None:
                  print('timed out :(')
                  
     elif menu_mode == 1:
-        print(menu_mode)
-        
         start_time = time.time()
         hold_time = 0
         if not GPIO.input(ROTARY_PUSH) and can_use:
@@ -176,9 +174,7 @@ def select(pin) -> None:
                 if menu_selection == 0:
                     game.stop_movement = True
             else:
-                print("BROKEN")
-                game.can_play = False
-                del game
+                remove_game()
                 launch_game(-1)
                 startup_display()
                 time.sleep(1)
@@ -192,7 +188,7 @@ def startup_display() -> None:
     # resets menu data with menu size of the games
     reset_menu_data(len(GAMES) - 1, 0)
 
-    clearScreen()
+    draw.rectangle((0, 0, disp.width, disp.height), fill = BLACK)
     draw.rectangle((0, 0, 130, 30), fill = BLUE)
     draw.text((5, 7.5), "Game Select", font = font, fill = WHITE)
 
@@ -206,8 +202,6 @@ def startup_display() -> None:
 if __name__ == "__main__":
     startup_display()
     
-
-    print(dir(GPIO))
     GPIO.setup(ROTARY_PUSH, GPIO.IN, pull_up_down = GPIO.PUD_UP)
     GPIO.setup(ROTARY_ROTATE, GPIO.IN, pull_up_down = GPIO.PUD_UP)
     GPIO.setup(ROTARY_DIRECTION, GPIO.IN, pull_up_down = GPIO.PUD_UP)
