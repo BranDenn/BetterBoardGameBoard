@@ -192,7 +192,8 @@ class Connect4(Game):
 
     def start_game(self) -> None:
         self.leds.fill(self.OFF)
-        self.game_display({"Red Points" : self.red_points, "Blue Points" : self.blue_points})
+        self.game_display()
+        self.update_score()
         self.set_starting_player()
         self.create_border(self.current_player)
 
