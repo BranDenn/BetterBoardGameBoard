@@ -114,7 +114,7 @@ class Animations(Game):
                 self.leds[i - length] = self.OFF
             sleep(delay)
 
-    def explosion_animation(self, delay : float = 0.01) -> None:
+    def explosion_animation(self, delay : float = 0.1) -> None:
         self.leds.auto_write = False
         
         positions = [60]

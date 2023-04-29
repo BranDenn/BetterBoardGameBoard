@@ -10,8 +10,9 @@ class Connect4(Game):
         self.leds.auto_write = True
         self.red_points = 0
         self.blue_points = 0
-        self.GAME_ROWS = 6
+        self.GAME_ROWS = 7
         self.GAME_COLUMNS = 7
+        self.font.size = 24
         self.start_game()
 
     def set_starting_player(self) -> None:
@@ -39,10 +40,12 @@ class Connect4(Game):
     def create_border(self, color : list) -> None:
         self.leds.brightness = 0.1
 
-        positions = []
+        positions = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 31, 32, 33, 34, 42, 43, 44, 45, 53, 54, 55, 56, 64, 65, 66, 67, 75, 76, 77, 78, 86, 87, 88, 89, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120]
 
         for pos in positions:
             self.leds[pos] = color
+
+        self.leds.brightness = 1
 
     def next_player(self) -> None:
         if self.current_player == self.RED:
@@ -182,7 +185,10 @@ class Connect4(Game):
         else:
             self.blue_points += points
 
-        self.update_display({"Red Points" : self.red_points, "Blue Points" : self.blue_points})
+        self.draw.rectangle((0, 50, self.disp.width, self.disp.height - 50), fill = (0, 0, 0))
+        self.draw.text((self.disp.width * (1/4), self.disp.height * (1/2)), str(self.red_points), font = self.font, fill = (255, 0, 0))
+        self.draw.text((self.disp.width * (3/4), self.disp.height * (1/2)), str(self.blue_points), font = self.font, fill = (0, 0, 255))
+        self.disp.display(self.img)
 
     def start_game(self) -> None:
         self.leds.fill(self.OFF)

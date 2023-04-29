@@ -128,7 +128,10 @@ class Stacker(Game):
 
     def update_score(self, points_amount : int = 0) -> None:
         self.points += points_amount
-        self.update_display({"Points" : self.points})
+
+        self.draw.rectangle((0, 50, self.disp.width, self.disp.height - 50), fill = (0, 0, 0))
+        self.draw.text((self.disp.width * (1/2), self.disp.width * (1/2)), str(self.points), font = self.font, fill = (255, 255, 255))
+        self.disp.display(self.img)
 
     def main_loop(self) -> None:
         while self.can_play:

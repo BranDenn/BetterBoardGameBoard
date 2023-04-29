@@ -1,7 +1,9 @@
+import time
+start_time = time.time()
+
 import serial
 import board
 import neopixel
-import time
 import random
 
 from PIL import Image
@@ -45,7 +47,8 @@ draw = ImageDraw.Draw(img)
 
 # Load default font.
 #font = ImageFont.load_default()
-font = ImageFont.truetype("IBMPlexSans-SemiBold.ttf", 24)
+#font = ImageFont.truetype("IBMPlexSans-SemiBold.ttf", 24)
+font = ImageFont.truetype("/fonts/PressStart2P-Regular.ttf", 14)
 
 GAMES = ["Stacker", "Connect4+"]
 
@@ -104,7 +107,7 @@ def update_menu(value : bool) -> None:
 # function called when rotary encoder is twisted
 def step(pin) -> None:
     global can_use
-    if can_use:
+    if can_use and menu_mode == 0:
         can_use = False
         update_menu(GPIO.input(ROTARY_DIRECTION)) # update menu based on the direction pin value (left or right)
         can_use = True
@@ -205,6 +208,9 @@ if __name__ == "__main__":
     GPIO.setup(ROTARY_DIRECTION, GPIO.IN, pull_up_down = GPIO.PUD_UP)
     GPIO.add_event_detect(ROTARY_PUSH, GPIO.FALLING, callback = select, bouncetime = 100)
     GPIO.add_event_detect(ROTARY_ROTATE, GPIO.FALLING, callback = step, bouncetime = 100)
+
+    print("SETUP COMPLETED IN %ss" % "{:.4f}".format(time.time() - start_time))
+    del start_time
     
     while True:
 
