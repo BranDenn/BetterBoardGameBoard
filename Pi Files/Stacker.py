@@ -8,7 +8,7 @@ class Stacker(Game):
         self.STARTING_LENGTH = 3
         self.BLINK_AMOUNT = 2
         self.BLINK_SPEED = 0.20
-        self.SPEED_DIVISOR = 50
+        self.SPEED_DIVISOR = 30
         self.stop_movement = False
         self.leds.auto_write = False
         self.points = 0
