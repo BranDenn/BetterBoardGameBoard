@@ -3,16 +3,18 @@ from time import sleep
 from random import randint
 
 class Stacker(Game):
-    def __init__(self, leds = None, display = None, image = None, draw = None, font = None) -> None:
-        super().__init__(leds, display, image, draw, font)
+    def __init__(self, leds = None, display = None, image = None, draw = None, font = None, font2 = None) -> None:
+        super().__init__(leds, display, image, draw, font, font2)
         self.STARTING_LENGTH = 3
         self.BLINK_AMOUNT = 2
         self.BLINK_SPEED = 0.20
-        self.SPEED_DIVISOR = 30
+        self.SPEED_DIVISOR = 20
         self.stop_movement = False
         self.leds.auto_write = False
         self.points = 0
         self.level = 1
+
+        print(self.font.size)
         self.game_display()
         self.update_score()
 
@@ -135,8 +137,12 @@ class Stacker(Game):
     def update_score(self, points_amount : int = 0) -> None:
         self.points += points_amount
 
-        self.draw.rectangle((0, 50, self.disp.width, self.disp.height - 50), fill = (0, 0, 0))
-        self.draw.text((self.disp.width * (1/2), self.disp.width * (1/2)), str(self.points), font = self.font, fill = (255, 255, 255))
+        self.draw.rectangle((0, 50, self.disp.width, self.disp.height - 50), fill = (255, 255, 255))
+        #self.draw.text((self.disp.width * (1/10), self.disp.width * (1/2)), "Points: ", font = self.font, fill = (255, 255, 255))
+        print(self.font.size)
+        bounds = self.font2.getbbox(str(self.points))[2:4]
+        bounds = (self.disp.width * (1/2) - bounds[0] * (1/2), self.disp.height * (1/2) - bounds[1] * (1/2))
+        self.draw.text(bounds, str(self.points), font = self.font2, fill = (0, 0, 0))
         self.disp.display(self.img)
 
     def main_loop(self) -> None:
@@ -160,4 +166,7 @@ class Stacker(Game):
             
             self.leds.fill(self.OFF)
             self.leds.show()
+            
+        self.clear_board()
+        self.finished = True
 

@@ -3,16 +3,14 @@ from time import sleep
 from random import randint
 
 class Connect4(Game):
-    def __init__(self, leds = None, display = None, image = None, draw = None, font = None, uart = None) -> None:
-        super().__init__(leds, display, image, draw, font)
+    def __init__(self, leds = None, display = None, image = None, draw = None, font = None, font2 = None, uart = None) -> None:
+        super().__init__(leds, display, image, draw, font, font2)
         self.uart = uart
-        self.current_player
-        self.leds.auto_write = True
+        self.current_player = None
         self.red_points = 0
         self.blue_points = 0
         self.GAME_ROWS = 7
         self.GAME_COLUMNS = 7
-        self.font.size = 24
         self.start_game()
 
     def set_starting_player(self) -> None:
@@ -38,14 +36,10 @@ class Connect4(Game):
             print("position:", position, "is already taken")
 
     def create_border(self, color : list) -> None:
-        self.leds.brightness = 0.1
-
         positions = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 31, 32, 33, 34, 42, 43, 44, 45, 53, 54, 55, 56, 64, 65, 66, 67, 75, 76, 77, 78, 86, 87, 88, 89, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120]
 
         for pos in positions:
             self.leds[pos] = color
-
-        self.leds.brightness = 1
 
     def next_player(self) -> None:
         if self.current_player == self.RED:
@@ -185,22 +179,35 @@ class Connect4(Game):
         else:
             self.blue_points += points
 
-        self.draw.rectangle((0, 50, self.disp.width, self.disp.height - 50), fill = (0, 0, 0))
-        self.draw.text((self.disp.width * (1/4), self.disp.height * (1/2)), str(self.red_points), font = self.font, fill = (255, 0, 0))
-        self.draw.text((self.disp.width * (3/4), self.disp.height * (1/2)), str(self.blue_points), font = self.font, fill = (0, 0, 255))
+        self.draw.rectangle((0, 50, self.disp.width, self.disp.height - 50), fill = (255, 255, 255))
+        bounds1 = self.font2.getbbox(str(self.red_points))[2:4]
+        bounds2 = self.font2.getbbox(str(self.blue_points))[2:4]
+        bounds1 = (self.disp.width * (1/4) - bounds1[0] * (1/2), self.disp.height * (1/2) - bounds1[1] * (1/2))
+        bounds2 = (self.disp.width * (3/4) - bounds2[0] * (1/2), self.disp.height * (1/2) - bounds2[1] * (1/2))
+        self.draw.text(bounds1, str(self.red_points), font = self.font2, fill = (0, 0, 255))
+        self.draw.text(bounds2, str(self.blue_points), font = self.font2, fill = (255, 0, 0))
         self.disp.display(self.img)
 
     def start_game(self) -> None:
-        self.leds.fill(self.OFF)
+        self.leds.auto_write = False
+        self.leds.brightness = 0.1
+        self.leds.fill(self.WHITE)
         self.game_display()
         self.update_score()
         self.set_starting_player()
         self.create_border(self.current_player)
+        self.leds.show()
+        self.leds.brightness = 1.0
+        self.leds.auto_write = True
 
-    def game_loop(self) -> None:
+    def main_loop(self) -> None:
         while self.can_play:
-            position = self.uart.read()
+            continue
+            position = self.uart.readline()
             if position:
                 self.update_board(int(position))
             else:
                 print("connect 4 uart timed out, trying again...")
+                
+        self.clear_board()
+        self.finished = True

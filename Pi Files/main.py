@@ -12,6 +12,8 @@ from PIL import ImageFont
 
 import ST7735
 import RPi.GPIO as GPIO
+from pygame import mixer
+#from pygame import 
 
 # GAME IMPORTS
 from Animations import Animations
@@ -34,10 +36,10 @@ ROTARY_ROTATE = 19
 ROTARY_DIRECTION = 26
 can_use = True
 
-disp = ST7735.ST7735(port=0, cs=0, dc=24, backlight=None, rst=25, width=128, height=160, rotation=180, invert=False)
+disp = ST7735.ST7735(port=0, cs=1, dc=24, backlight=23, rst=25, width=128, height=160, rotation=180, invert = False)
 # init uart
 
-uart = serial.Serial("/dev/ttyS0", baudrate=9600, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout = 1)
+uart = serial.Serial("/dev/ttyS0", baudrate=115200, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout = 1)
 
 # init LEDs
 LEDstrip = neopixel.NeoPixel(board.D21, 121, brightness = 1)
@@ -47,8 +49,19 @@ draw = ImageDraw.Draw(img)
 
 # Load default font.
 #font = ImageFont.load_default()
-#font = ImageFont.truetype("IBMPlexSans-SemiBold.ttf", 24)
-font = ImageFont.truetype("/fonts/PressStart2P-Regular.ttf", 14)
+#font = ImageFont.truetype("IBMPlexSans-SemiBold.ttf", 14)
+font = ImageFont.truetype("PressStart2P-Regular.ttf", 8)
+font2 = ImageFont.truetype("PressStart2P-Regular.ttf", 36)
+
+#Inits for pygame audio
+mixer.init()
+
+win_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/YayWin.wav")
+p1_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/Button_01.wav")
+p2_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/Button_02.wav")
+
+# Need to declare the sound object that is being modified and then the value of the desired volume for the sound
+mixer.Sound.set_volume(win_sound, 0.1)
 
 GAMES = ["Stacker", "Connect4+"]
 
@@ -77,9 +90,11 @@ def reset_menu_data(size : int, mode : int) -> None:
 def update_menu(value : bool) -> None:
     global menu_position
     global menu_selection
+    
+    mixer.Sound.play(p1_sound)
 
-    draw.rectangle((0, 48 + menu_position, 100, 63 + menu_position), fill = BLACK)
-    draw.text((10, 50 + menu_position), (GAMES[menu_selection]), font = font, fill = WHITE)
+    draw.rectangle((0, 46 + menu_position, disp.width - 12, 60 + menu_position), fill = BLACK)
+    draw.text((disp.width * (1/2) - (font.getlength(GAMES[menu_selection]) / 2), 50 + menu_position), GAMES[menu_selection], font = font, fill = WHITE)
 
     if not value:
         # Turned Right
@@ -98,10 +113,10 @@ def update_menu(value : bool) -> None:
             menu_position = menu_position - 20
             menu_selection -= 1
             
-    draw.rectangle((12, 48 + menu_position, 100, 63 + menu_position), fill = WHITE)
-    draw.rectangle((13, 49 + menu_position, 99, 62 + menu_position), fill = ORANGE)
-    draw.text((10, 50 + menu_position), GAMES[menu_selection], font = font, fill = WHITE)
-    draw.text((5, 50 + menu_position), ">", font = font, fill = WHITE)
+    draw.rectangle((12, 46 + menu_position, disp.width - 12, 60 + menu_position), fill = WHITE)
+    draw.rectangle((13, 47 + menu_position, disp.width - 13, 59 + menu_position), fill = RED)
+    draw.text((disp.width * (1/2) - (font.getlength(GAMES[menu_selection]) / 2), 50 + menu_position), GAMES[menu_selection], font = font, fill = WHITE)
+    #draw.text((5, 50 + menu_position), ">", font = font, fill = WHITE)
     disp.display(img)
     
 # function called when rotary encoder is twisted
@@ -117,34 +132,38 @@ def launch_game(selection : int) -> None:
     global game
     if selection == 0:
         print("Launching Stacker")
-        game = Stacker(LEDstrip, disp, img, draw, font)
+        game = Stacker(LEDstrip, disp, img, draw, font, font2)
     elif selection == 1:
         print("Launching Connect4+")
-        game = Connect4(LEDstrip, disp, img, draw, font, uart)
+        game = Connect4(LEDstrip, disp, img, draw, font, font2, uart)
     else:
         game = Animations(LEDstrip)
+#         update_menu(GPIO.input(ROTARY_DIRECTION))
         
 def remove_game() -> None:
     global game
     game.can_play = False
-    del game  
+    while not game.finished:
+        time.sleep(0.1)
+    #del game
+    
 
 def select(pin) -> None:
     global can_use
     global game
     global menu_mode
-
+    mixer.Sound.play(p2_sound)
     if menu_mode == 0:
         if not GPIO.input(ROTARY_PUSH) and can_use:
             can_use = False
             
-            draw.rectangle((0, 135, disp.width, disp.height), fill = BLACK)
-            draw.text((5, 135), ("Attempting to launch"), font = font, fill = WHITE)
+            draw.text((5, 135), ("Trying to start"), font = font, fill = WHITE)
             draw.text((5, 145), GAMES[menu_selection] + "...", font = font, fill = WHITE)
             disp.display(img)
 
-            uart.write(b'%d' % menu_selection)
-            ack = uart.read()
+            uart.write(b'Pi%d\n' % menu_selection)
+            #uart.write(b"test")
+            ack = uart.readline()
             print("ack:", ack)
             ack = b'0'
             
@@ -176,8 +195,11 @@ def select(pin) -> None:
             else:
                 remove_game()
                 launch_game(-1)
+                time.sleep(1)
+                update_menu(GPIO.input(ROTARY_DIRECTION))
                 startup_display()
                 time.sleep(1)
+                startup_display()
                 can_use = True
                 return
     
@@ -189,15 +211,14 @@ def startup_display() -> None:
     reset_menu_data(len(GAMES) - 1, 0)
 
     draw.rectangle((0, 0, disp.width, disp.height), fill = BLACK)
-    draw.rectangle((0, 0, disp.width, 30), fill = BLUE)
-    draw.rectangle((0, disp.height - 30, disp.width, disp.height), fill = BLUE)
-    draw.text((5, 7.5), "Game Select", font = font, fill = WHITE)
+    draw.rectangle((0, 0, disp.width, 30), fill = RED)
+    draw.rectangle((0, disp.height - 30, disp.width, disp.height), fill = RED)
+    draw.text((disp.width * (1/2) - (font.getlength("Game Select") / 2), 12), "Game Select", font = font, fill = WHITE)
 
-    draw.rectangle((12, 48, 100, 63), fill = WHITE)
-    draw.rectangle((13, 49, 99, 62), fill = ORANGE)
+    draw.rectangle((12, 46, disp.width - 12, 60), fill = WHITE)
+    draw.rectangle((13, 47, disp.width - 13, 59), fill = RED)
     for i in range(0, menu_size + 1): # displays test for every game
-        draw.text((10, 50 + (20 * i)), GAMES[i], font = font, fill = WHITE)
-    draw.text((5, 50), ">", font = font, fill = WHITE)
+        draw.text((disp.width * (1/2) - (font.getlength(GAMES[i]) / 2), 50 + (20 * i)), GAMES[i], font = font, fill = WHITE)
     disp.display(img)
     
 if __name__ == "__main__":
@@ -206,8 +227,8 @@ if __name__ == "__main__":
     GPIO.setup(ROTARY_PUSH, GPIO.IN, pull_up_down = GPIO.PUD_UP)
     GPIO.setup(ROTARY_ROTATE, GPIO.IN, pull_up_down = GPIO.PUD_UP)
     GPIO.setup(ROTARY_DIRECTION, GPIO.IN, pull_up_down = GPIO.PUD_UP)
-    GPIO.add_event_detect(ROTARY_PUSH, GPIO.FALLING, callback = select, bouncetime = 100)
-    GPIO.add_event_detect(ROTARY_ROTATE, GPIO.FALLING, callback = step, bouncetime = 100)
+    GPIO.add_event_detect(ROTARY_PUSH, GPIO.FALLING, callback = select, bouncetime = 500)
+    GPIO.add_event_detect(ROTARY_ROTATE, GPIO.FALLING, callback = step, bouncetime = 500)
 
     print("SETUP COMPLETED IN %ss" % "{:.4f}".format(time.time() - start_time))
     del start_time
@@ -223,7 +244,7 @@ if __name__ == "__main__":
             print("keyboard interrupt")
             break
         except:
-            print("could not run main_loop, trying again in 0.1s...")
+            #print("could not run main_loop, trying again in 0.1s...")
             time.sleep(0.1)
             
 GPIO.remove_event_detect(ROTARY_PUSH)

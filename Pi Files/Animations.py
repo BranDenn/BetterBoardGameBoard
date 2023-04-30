@@ -141,7 +141,7 @@ class Animations(Game):
 
         for i in positions:
             self.leds[i] = self.OFF
-        positions = [27, 37, 39, 47, 51, 57, 63, 69, 72, 81, 83, 93]
+        positions = [27, 37, 39, 47, 51, 57, 63, 69, 73, 81, 83, 93]
         for i in positions:
             self.leds[i] = self.get_random_color()
         self.leds.show()
@@ -205,6 +205,8 @@ class Animations(Game):
 
         for i in positions:
             self.leds[i] = self.OFF
+        self.leds.show()
+        sleep(delay)
         
         self.leds.auto_write = True
 
@@ -218,13 +220,12 @@ class Animations(Game):
             self.create_B(72, (0, 125, 255))
             self.leds.show()
             sleep(delay)
+        
+        if self.can_play:
             self.create_B(1, (0, 0, 0))
             self.create_B(6, (0, 0, 0))
             self.create_G(67, (0, 0, 0))
             self.create_B(72, (0, 0, 0))
-            self.leds.show()
-        
-        if self.can_play:
             self.create_C(0, (0, 125, 255))
             self.create_S(4, (0, 125, 255))
             self.create_U(8, (0, 125, 255))
@@ -232,12 +233,7 @@ class Animations(Game):
             self.create_B(72, (255, 125, 0))
             self.leds.show()
             sleep(delay)
-            self.create_C(0, (0, 0, 0))
-            self.create_S(4, (0, 0, 0))
-            self.create_U(8, (0, 0, 0))
-            self.create_L(67, (0, 0, 0))
-            self.create_B(72, (0, 0, 0))
-            self.leds.show()
+
         self.leds.auto_write = True
 
     def random_wipe_animation(self) -> None:
@@ -253,3 +249,6 @@ class Animations(Game):
             self.random_wipe_animation()
             #self.snake_animation() # delay, snake length, brightness
             self.slide()
+            
+        self.clear_board()
+        self.finished = True
