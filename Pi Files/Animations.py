@@ -247,8 +247,8 @@ class Animations(Game):
     def main_loop(self) -> None:
         while self.can_play:
             print("looping animation!")
-            self.slide()
             self.random_wipe_animation()
+            self.slide()
             
         self.clear_board()
         self.finished = True
