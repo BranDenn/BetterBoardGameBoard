@@ -9,8 +9,6 @@ class Connect4(Game):
         self.current_player = None
         self.red_points = 0
         self.blue_points = 0
-        self.GAME_ROWS = 7
-        self.GAME_COLUMNS = 7
         self.start_game()
 
     def set_starting_player(self) -> None:
@@ -26,7 +24,7 @@ class Connect4(Game):
         position = (position % self.COLUMNS) + (self.ROWS + self.ROWS) # modulate the add two rows to be in area
 
         if self.leds[position] == self.DIM_WHITE:
-            for i in range(0, self.GAME_ROWS):
+            for i in range(0, self.COLUMNS - 4):
                 self.leds[position] = self.current_player
 
                 if i < (self.COLUMNS - 2) and self.leds[position + self.ROWS] == self.DIM_WHITE:
