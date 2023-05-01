@@ -146,6 +146,7 @@ class Stacker(Game):
 
     def main_loop(self) -> None:
         while self.can_play:
+            self.start_game()
             current_length = self.STARTING_LENGTH
 
             for row in range(self.ROWS - 1, -1, -1):
