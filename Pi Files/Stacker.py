@@ -13,7 +13,6 @@ class Stacker(Game):
         self.stop_movement = False
         self.leds.auto_write = False
         self.points = 0
-        self.update_score()
 
     def move(self, row : int, length : int, color : list, delay : float) -> list:
         positions = [None] * length
@@ -143,6 +142,7 @@ class Stacker(Game):
         self.leds.fill(self.OFF)
         self.leds.show()
         self.game_display(self.__class__.__name__ + " - LVL: %d" % self.level)
+        self.update_score()
 
     def main_loop(self) -> None:
         while self.can_play:
