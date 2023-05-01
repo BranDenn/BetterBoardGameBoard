@@ -9,8 +9,6 @@ class TicTacToe(Game):
         self.current_player = None
         self.red_points = 0
         self.blue_points = 0
-        self.GAME_ROWS = 3
-        self.GAME_COLUMNS = 3
         self.start_game()
 
     def set_starting_player(self) -> None:
