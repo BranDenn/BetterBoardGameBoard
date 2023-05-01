@@ -1,14 +1,16 @@
 from GameClass import Game
 from time import sleep
 from random import randint
+import json
 
 class Connect4(Game):
-    def __init__(self, leds = None, display = None, image = None, draw = None, font = None, font2 = None, uart = None) -> None:
+    def __init__(self, leds = None, display = None, image = None, draw = None, font = None, font2 = None, uart = None, save_sel = 0) -> None:
         super().__init__(leds, display, image, draw, font, font2)
         self.uart = uart
         self.current_player = None
         self.red_points = 0
         self.blue_points = 0
+        self.save_name = ("Connect4_Save%d.json" % save_sel)
         self.start_game()
 
     def set_starting_player(self) -> None:
@@ -24,7 +26,7 @@ class Connect4(Game):
         position = (position % self.COLUMNS) + (self.ROWS + self.ROWS) # modulate the add two rows to be in area
 
         if self.leds[position] == self.DIM_WHITE:
-            for i in range(0, self.COLUMNS - 4):
+            for i in range(0, self.ROWS - 4):
                 self.leds[position] = self.current_player
 
                 if i < (self.COLUMNS - 2) and self.leds[position + self.ROWS] == self.DIM_WHITE:
