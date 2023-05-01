@@ -19,6 +19,7 @@ from pygame import mixer
 from Animations import Animations
 from Stacker import Stacker
 from Connect4 import Connect4
+from TicTacToe import TicTacToe
 
 RED = (0, 0, 255)
 GREEN = (0, 255, 0)
@@ -55,17 +56,13 @@ font2 = ImageFont.truetype("/home/b1128c/BetterBoardGameBoard/Pi Files/fonts/Pre
 
 #Inits for pygame audio
 mixer.init()
-
-#win_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/YayWin.wav")
-#p1_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/Button_01.wav")
-#p2_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/Button_02.wav")
 select_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/Pi Files/audio/gameselect.wav")
 music = mixer.music.load("/home/b1128c/BetterBoardGameBoard/Pi Files/audio/gamebg.wav")
 
 # Need to declare the sound object that is being modified and then the value of the desired volume for the sound
 #mixer.Sound.set_volume(select_sou, 0.1)
 
-GAMES = ["Stacker", "Connect4+"]
+GAMES = ["Stacker", "Connect4+", "Tic-Tac-Toe"]
 
 # create default game as the animation
 game = Animations(LEDstrip)
@@ -137,6 +134,8 @@ def launch_game(selection : int) -> None:
     elif selection == 1:
         print("Launching Connect4+")
         game = Connect4(LEDstrip, disp, img, draw, font, font2, uart)
+    elif selection == 2:
+        game = TicTacToe(LEDstrip, disp, img, draw, font, font2, uart)
     else:
         game = Animations(LEDstrip)
 #         update_menu(GPIO.input(ROTARY_DIRECTION))
@@ -149,7 +148,6 @@ def remove_game() -> None:
     del game
     mixer.music.stop()
     
-
 def select(pin) -> None:
     global can_use
     global game
@@ -165,10 +163,8 @@ def select(pin) -> None:
             disp.display(img)
 
             uart.write(b'Pi%d\n' % menu_selection)
-            #uart.write(b"test")
             ack = uart.readline()
             print("ack:", ack)
-            #ack = b'0'
             
             if ack:
                 remove_game()

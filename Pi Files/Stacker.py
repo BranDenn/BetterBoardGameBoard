@@ -8,13 +8,11 @@ class Stacker(Game):
         self.STARTING_LENGTH = 3
         self.BLINK_AMOUNT = 2
         self.BLINK_SPEED = 0.20
-        self.speed_divisor = 20
+        self.SPEED_DIVISOR = 20
+        self.level = 1
         self.stop_movement = False
         self.leds.auto_write = False
         self.points = 0
-
-        print(self.font.size)
-        self.game_display()
         self.update_score()
 
     def move(self, row : int, length : int, color : list, delay : float) -> list:
@@ -116,8 +114,7 @@ class Stacker(Game):
 
     def game_ended(self, row : int, length : int) -> bool:
         if length < 1:
-            print("you lost :(")
-            self.speed_divisor = 20
+            self.level = 1
             self.points = 0
             self.update_score()
             self.highlight_positions(self.RED)
@@ -125,8 +122,8 @@ class Stacker(Game):
             return True
 
         if row < 1:
-            print("you won :D")
-            self.speed_divisor += 20
+            self.level += 1
+            self.play_win_sound()
             self.highlight_positions(self.WHITE)
             sleep(2)
             return True
@@ -137,24 +134,23 @@ class Stacker(Game):
         self.points += points_amount
 
         self.draw.rectangle((0, 50, self.disp.width, self.disp.height - 50), fill = (255, 255, 255))
-        #self.draw.text((self.disp.width * (1/10), self.disp.width * (1/2)), "Points: ", font = self.font, fill = (255, 255, 255))
-        print(self.font.size)
         bounds = self.font2.getbbox(str(self.points))[2:4]
         bounds = (self.disp.width * (1/2) - bounds[0] * (1/2), self.disp.height * (1/2) - bounds[1] * (1/2))
         self.draw.text(bounds, str(self.points), font = self.font2, fill = (0, 0, 0))
         self.disp.display(self.img)
 
+    def start_game(self) -> None:
+        self.leds.fill(self.OFF)
+        self.leds.show()
+        self.game_display(self.__class__.__name__ + " - LVL: %d" % self.level)
+
     def main_loop(self) -> None:
         while self.can_play:
-            self.leds.fill(self.OFF)
-            self.leds.show()
-            print("game started")
             current_length = self.STARTING_LENGTH
 
             for row in range(self.ROWS - 1, -1, -1):
-                print('row:', row)
                 color = [randint(0, 255), randint(0, 255), randint(0, 255)]
-                speed = (row + 1) / self.speed_divisor
+                speed = (row + 1) / (self.SPEED_DIVISOR + ((self.level - 1) * 20))
                 positions = self.move(row, current_length, color, speed)
                 current_length -= self.check_for_removal(row, positions, color)
 
