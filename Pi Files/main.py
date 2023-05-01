@@ -73,6 +73,14 @@ menu_selection = 0
 menu_size = 0
 menu_mode = 0
 
+# def shutdown():
+#     print("shutting down")
+#     command = "usr/bin/sudo /sbin/shutdown -h now"
+#     import subprocess
+#     process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+#     output = process.communicate()[0]
+#     print(output)
+
 # resets the data for the menu with data depeneded on the menu mode
 def reset_menu_data(size : int, mode : int) -> None:
     global menu_position
@@ -192,6 +200,7 @@ def select(pin) -> None:
                 if menu_selection == 0:
                     game.stop_movement = True
             else:
+                uart.write(b'Pi%d\n'%-1)
                 remove_game()
                 launch_game(-1)
                 time.sleep(1)

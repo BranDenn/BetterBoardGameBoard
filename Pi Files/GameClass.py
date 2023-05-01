@@ -31,7 +31,8 @@ class Game():
     def play_win_sound(self) -> None:
         mixer.Sound.play(self.win_sound)
 
-    def game_display(self, text_override : str | None = None) -> None:
+    def game_display(self, text_override : str or None = None) -> None:
+        print("displaying game!")
         self.draw.rectangle((0, 0, self.disp.width, self.disp.height), fill = (255, 255, 255))
         self.draw.rectangle((0, 0, self.disp.width, 30), fill = (0, 0, 255))
         self.draw.rectangle((0, self.disp.height - 30, self.disp.width, self.disp.height), fill = (0, 0, 255))
