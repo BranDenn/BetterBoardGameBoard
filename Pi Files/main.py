@@ -36,7 +36,7 @@ ROTARY_ROTATE = 19
 ROTARY_DIRECTION = 26
 can_use = True
 
-disp = ST7735.ST7735(port=0, cs=1, dc=24, backlight=23, rst=25, width=128, height=160, rotation=180, invert = False)
+disp = ST7735.ST7735(port=0, cs=1, dc=24, backlight=23, rst=25, width=128, height=160, rotation=0, invert = False)
 # init uart
 
 uart = serial.Serial("/dev/ttyS0", baudrate=115200, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout = 1)
@@ -50,18 +50,20 @@ draw = ImageDraw.Draw(img)
 # Load default font.
 #font = ImageFont.load_default()
 #font = ImageFont.truetype("IBMPlexSans-SemiBold.ttf", 14)
-font = ImageFont.truetype("PressStart2P-Regular.ttf", 8)
-font2 = ImageFont.truetype("PressStart2P-Regular.ttf", 36)
+font = ImageFont.truetype("/home/b1128c/BetterBoardGameBoard/Pi Files/fonts/PressStart2P-Regular.ttf", 8)
+font2 = ImageFont.truetype("/home/b1128c/BetterBoardGameBoard/Pi Files/fonts/PressStart2P-Regular.ttf", 36)
 
 #Inits for pygame audio
 mixer.init()
 
-win_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/YayWin.wav")
-p1_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/Button_01.wav")
-p2_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/Button_02.wav")
+#win_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/YayWin.wav")
+#p1_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/Button_01.wav")
+#p2_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/BBGB/Games/TicTacToe/Sounds/Button_02.wav")
+select_sound = mixer.Sound("/home/b1128c/BetterBoardGameBoard/Pi Files/audio/gameselect.wav")
+music = mixer.music.load("/home/b1128c/BetterBoardGameBoard/Pi Files/audio/gamebg.wav")
 
 # Need to declare the sound object that is being modified and then the value of the desired volume for the sound
-mixer.Sound.set_volume(win_sound, 0.1)
+#mixer.Sound.set_volume(select_sou, 0.1)
 
 GAMES = ["Stacker", "Connect4+"]
 
@@ -91,8 +93,6 @@ def update_menu(value : bool) -> None:
     global menu_position
     global menu_selection
     
-    mixer.Sound.play(p1_sound)
-
     draw.rectangle((0, 46 + menu_position, disp.width - 12, 60 + menu_position), fill = BLACK)
     draw.text((disp.width * (1/2) - (font.getlength(GAMES[menu_selection]) / 2), 50 + menu_position), GAMES[menu_selection], font = font, fill = WHITE)
 
@@ -130,6 +130,7 @@ def step(pin) -> None:
 # launches appropriate game based on value
 def launch_game(selection : int) -> None:
     global game
+    mixer.music.play()
     if selection == 0:
         print("Launching Stacker")
         game = Stacker(LEDstrip, disp, img, draw, font, font2)
@@ -145,17 +146,19 @@ def remove_game() -> None:
     game.can_play = False
     while not game.finished:
         time.sleep(0.1)
-    #del game
+    del game
+    mixer.music.stop()
     
 
 def select(pin) -> None:
     global can_use
     global game
     global menu_mode
-    mixer.Sound.play(p2_sound)
     if menu_mode == 0:
         if not GPIO.input(ROTARY_PUSH) and can_use:
             can_use = False
+            
+            mixer.Sound.play(select_sound)
             
             draw.text((5, 135), ("Trying to start"), font = font, fill = WHITE)
             draw.text((5, 145), GAMES[menu_selection] + "...", font = font, fill = WHITE)
@@ -165,7 +168,7 @@ def select(pin) -> None:
             #uart.write(b"test")
             ack = uart.readline()
             print("ack:", ack)
-            ack = b'0'
+            #ack = b'0'
             
             if ack:
                 remove_game()
@@ -247,6 +250,9 @@ if __name__ == "__main__":
             #print("could not run main_loop, trying again in 0.1s...")
             time.sleep(0.1)
             
+mixer.music.stop()
+LEDstrip.fill([0, 0, 0])
+LEDstrip.show()
 GPIO.remove_event_detect(ROTARY_PUSH)
 GPIO.remove_event_detect(ROTARY_ROTATE)
 GPIO.cleanup()

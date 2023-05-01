@@ -210,7 +210,6 @@ class Animations(Game):
         
         self.leds.auto_write = True
 
-
     def slide(self, delay : float = 1.0) -> None:
         self.leds.auto_write = False
         if self.can_play:
@@ -233,10 +232,11 @@ class Animations(Game):
             self.create_B(72, (255, 125, 0))
             self.leds.show()
             sleep(delay)
-
+            
         self.leds.auto_write = True
 
     def random_wipe_animation(self) -> None:
+        print("doing wipe")
         random_animation = randint(0, 1)
         if random_animation == 0:
             self.snake_animation()

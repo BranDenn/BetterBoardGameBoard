@@ -14,6 +14,7 @@ class Game():
         self.RED = [255, 0, 0]
         self.BLUE = [0, 0, 255]
         self.WHITE = [255, 255, 255]
+        self.DIM_WHITE = [100,100,100]
 
     def __del__(self) -> None:
         print(self.__class__.__name__, "has been destructed!")

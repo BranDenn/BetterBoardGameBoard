@@ -8,11 +8,10 @@ class Stacker(Game):
         self.STARTING_LENGTH = 3
         self.BLINK_AMOUNT = 2
         self.BLINK_SPEED = 0.20
-        self.SPEED_DIVISOR = 20
+        self.speed_divisor = 20
         self.stop_movement = False
         self.leds.auto_write = False
         self.points = 0
-        self.level = 1
 
         print(self.font.size)
         self.game_display()
@@ -118,7 +117,7 @@ class Stacker(Game):
     def game_ended(self, row : int, length : int) -> bool:
         if length < 1:
             print("you lost :(")
-            self.level = 1
+            self.speed_divisor = 20
             self.points = 0
             self.update_score()
             self.highlight_positions(self.RED)
@@ -127,7 +126,7 @@ class Stacker(Game):
 
         if row < 1:
             print("you won :D")
-            self.level += 1
+            self.speed_divisor += 20
             self.highlight_positions(self.WHITE)
             sleep(2)
             return True
@@ -147,13 +146,15 @@ class Stacker(Game):
 
     def main_loop(self) -> None:
         while self.can_play:
+            self.leds.fill(self.OFF)
+            self.leds.show()
             print("game started")
             current_length = self.STARTING_LENGTH
 
             for row in range(self.ROWS - 1, -1, -1):
                 print('row:', row)
                 color = [randint(0, 255), randint(0, 255), randint(0, 255)]
-                speed = (row + 1) / (self.SPEED_DIVISOR + (self.level * 10))
+                speed = (row + 1) / self.speed_divisor
                 positions = self.move(row, current_length, color, speed)
                 current_length -= self.check_for_removal(row, positions, color)
 
@@ -164,9 +165,5 @@ class Stacker(Game):
                 if self.game_ended(row, current_length):
                     break
             
-            self.leds.fill(self.OFF)
-            self.leds.show()
-            
-        self.clear_board()
         self.finished = True
 
