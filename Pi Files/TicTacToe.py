@@ -147,7 +147,7 @@ class TicTacToe(Game):
             else:
                 break
 
-        if len(winning_positions) >= 4:
+        if len(winning_positions) >= 3:
             self.show_win(winning_positions)
             return True
         return False
