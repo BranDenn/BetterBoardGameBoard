@@ -4,7 +4,7 @@ start_time = time.time()
 import serial
 import board
 import neopixel
-import random
+import os
 
 from PIL import Image
 from PIL import ImageDraw
@@ -20,6 +20,7 @@ from Animations import Animations
 from Stacker import Stacker
 from Connect4 import Connect4
 from TicTacToe import TicTacToe
+from Draw import Draw
 
 RED = (0, 0, 255)
 GREEN = (0, 255, 0)
@@ -62,7 +63,8 @@ music = mixer.music.load("/home/b1128c/BetterBoardGameBoard/Pi Files/audio/gameb
 # Need to declare the sound object that is being modified and then the value of the desired volume for the sound
 #mixer.Sound.set_volume(select_sou, 0.1)
 
-GAMES = ["Stacker", "Connect4+", "Tic-Tac-Toe"]
+GAMES = ["Stacker", "Connect4+", "Tic-Tac-Toe", "Draw"]
+saves = []
 
 # create default game as the animation
 game = Animations(LEDstrip)
@@ -73,13 +75,7 @@ menu_selection = 0
 menu_size = 0
 menu_mode = 0
 
-# def shutdown():
-#     print("shutting down")
-#     command = "usr/bin/sudo /sbin/shutdown -h now"
-#     import subprocess
-#     process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
-#     output = process.communicate()[0]
-#     print(output)
+game_selection = 0
 
 # resets the data for the menu with data depeneded on the menu mode
 def reset_menu_data(size : int, mode : int) -> None:
@@ -92,6 +88,7 @@ def reset_menu_data(size : int, mode : int) -> None:
     menu_selection = 0
     menu_size = size
     menu_mode = mode
+    print("MENU SELECTION:", menu_selection)
     
 # scrolls the menu either up or down and updates the global selection
 def update_menu(value : bool) -> None:
@@ -99,8 +96,11 @@ def update_menu(value : bool) -> None:
     global menu_selection
     
     draw.rectangle((0, 46 + menu_position, disp.width - 12, 60 + menu_position), fill = BLACK)
-    draw.text((disp.width * (1/2) - (font.getlength(GAMES[menu_selection]) / 2), 50 + menu_position), GAMES[menu_selection], font = font, fill = WHITE)
-
+    if menu_mode == 0:
+        draw.text((disp.width * (1/2) - (font.getlength(GAMES[menu_selection]) / 2), 50 + menu_position), GAMES[menu_selection], font = font, fill = WHITE)
+    else:
+        draw.text((disp.width * (1/2) - (font.getlength(saves[menu_selection]) / 2), 50 + menu_position), saves[menu_selection], font = font, fill = WHITE)
+   
     if not value:
         # Turned Right
         if menu_selection == menu_size:                   
@@ -117,37 +117,56 @@ def update_menu(value : bool) -> None:
         else:
             menu_position = menu_position - 20
             menu_selection -= 1
-            
+    
     draw.rectangle((12, 46 + menu_position, disp.width - 12, 60 + menu_position), fill = WHITE)
     draw.rectangle((13, 47 + menu_position, disp.width - 13, 59 + menu_position), fill = RED)
-    draw.text((disp.width * (1/2) - (font.getlength(GAMES[menu_selection]) / 2), 50 + menu_position), GAMES[menu_selection], font = font, fill = WHITE)
+    
+    if menu_mode == 0:
+        draw.text((disp.width * (1/2) - (font.getlength(GAMES[menu_selection]) / 2), 50 + menu_position), GAMES[menu_selection], font = font, fill = WHITE)
+    else:
+        draw.text((disp.width * (1/2) - (font.getlength(saves[menu_selection]) / 2), 50 + menu_position), saves[menu_selection], font = font, fill = WHITE)
     #draw.text((5, 50 + menu_position), ">", font = font, fill = WHITE)
     disp.display(img)
     
 # function called when rotary encoder is twisted
 def step(pin) -> None:
     global can_use
-    if can_use and menu_mode == 0:
+    if can_use and menu_mode != 1:
         can_use = False
         update_menu(GPIO.input(ROTARY_DIRECTION)) # update menu based on the direction pin value (left or right)
         can_use = True
 
 # launches appropriate game based on value
-def launch_game(selection : int) -> None:
+def launch_game(selection : int, save_selection : int = 0) -> None:
     global game
+    global menu_mode
+
     mixer.music.play()
     if selection == 0:
         print("Launching Stacker")
         game = Stacker(LEDstrip, disp, img, draw, font, font2)
     elif selection == 1:
         print("Launching Connect4+")
-        game = Connect4(LEDstrip, disp, img, draw, font, font2, uart)
+        if menu_selection == 0:
+            string = saves[len(saves)-1]
+            last_file_number = int(string[5:len(string)])
+        else:
+            last_file_number = 0
+        
+        if len(saves) > 1:
+            game = Connect4(LEDstrip, disp, img, draw, font, font2, uart, menu_selection, last_file_number)
+        else:
+            game = Connect4(LEDstrip, disp, img, draw, font, font2, uart, 0, last_file_number)
+            
     elif selection == 2:
         game = TicTacToe(LEDstrip, disp, img, draw, font, font2, uart)
+    elif selection == 3:
+        game = Draw(LEDstrip, disp, img, draw, font, font2, uart)
     else:
         game = Animations(LEDstrip)
-#         update_menu(GPIO.input(ROTARY_DIRECTION))
-        
+
+    menu_mode = 1
+
 def remove_game() -> None:
     global game
     game.can_play = False
@@ -170,6 +189,11 @@ def select(pin) -> None:
             draw.text((5, 145), GAMES[menu_selection] + "...", font = font, fill = WHITE)
             disp.display(img)
 
+            if has_saves(menu_selection):
+                time.sleep(1)
+                can_use = True
+                return
+
             uart.write(b'Pi%d\n' % menu_selection)
             ack = uart.readline()
             print("ack:", ack)
@@ -177,13 +201,12 @@ def select(pin) -> None:
             if ack:
                 remove_game()
                 launch_game(menu_selection)
-                menu_mode = 1
-                time.sleep(1)
+                time.sleep(0.5)
                 can_use = True
                 return
                 
             else:
-                 print('timed out :(')
+                print('timed out :(')
                  
     elif menu_mode == 1:
         start_time = time.time()
@@ -202,13 +225,38 @@ def select(pin) -> None:
             else:
                 remove_game()
                 launch_game(-1)
-                time.sleep(1)
-                update_menu(GPIO.input(ROTARY_DIRECTION))
+                #time.sleep(1)
+                #startup_display()
                 startup_display()
                 time.sleep(1)
-                startup_display()
+                #startup_display()
                 can_use = True
                 return
+            
+    if menu_mode == 2:
+        if not GPIO.input(ROTARY_PUSH) and can_use:
+            can_use = False
+            
+            mixer.Sound.play(select_sound)
+            
+            draw.text((5, 135), "Trying to", font = font, fill = WHITE)
+            draw.text((5, 145), "load save...", font = font, fill = WHITE)
+            disp.display(img)
+
+            uart.write(b'Pi%d\n' % game_selection)
+            ack = uart.readline()
+            print("ack:", ack)
+            
+            if ack:
+                remove_game()
+                launch_game(game_selection, menu_selection)
+                menu_mode = 1
+                time.sleep(0.5)
+                can_use = True
+                return
+                
+            else:
+                print('timed out :(')
     
     can_use = True
             
@@ -220,7 +268,8 @@ def startup_display() -> None:
     draw.rectangle((0, 0, disp.width, disp.height), fill = BLACK)
     draw.rectangle((0, 0, disp.width, 30), fill = RED)
     draw.rectangle((0, disp.height - 30, disp.width, disp.height), fill = RED)
-    draw.text((disp.width * (1/2) - (font.getlength("Game Select") / 2), 12), "Game Select", font = font, fill = WHITE)
+    text = "Game Select"
+    draw.text((disp.width * (1/2) - (font.getlength(text) / 2), 12), text, font = font, fill = WHITE)
 
     draw.rectangle((12, 46, disp.width - 12, 60), fill = WHITE)
     draw.rectangle((13, 47, disp.width - 13, 59), fill = RED)
@@ -228,6 +277,46 @@ def startup_display() -> None:
         draw.text((disp.width * (1/2) - (font.getlength(GAMES[i]) / 2), 50 + (20 * i)), GAMES[i], font = font, fill = WHITE)
     disp.display(img)
     
+def has_saves(selection : int) -> bool:
+    if selection == 1:
+        global saves
+        
+        saves = ["NEW GAME"]
+        json_files = [pos_json for pos_json in os.listdir("/home/b1128c/BetterBoardGameBoard/Pi Files/saves") if pos_json.endswith('.json')]# and pos_json.startswith("connect")]
+        json_files.sort()
+        
+        print(json_files)
+        for i in range(0, len(json_files)):
+            saves.append("SAVE %d" % (int(json_files[i][5:json_files[i].rfind(".")])) )
+        
+        if json_files:
+            global game_selection
+            game_selection = selection
+            save_display()
+            return True
+
+    return False
+
+def save_display() -> None:
+    if len(saves) > 3: # only allow up to 5 saves shown
+        reset_menu_data(3, 2)
+    else:
+        reset_menu_data(len(saves) - 1, 2)
+        
+    print(saves)
+
+    draw.rectangle((0, 0, disp.width, disp.height), fill = BLACK)
+    draw.rectangle((0, 0, disp.width, 30), fill = RED)
+    draw.rectangle((0, disp.height - 30, disp.width, disp.height), fill = RED)
+    text = "Save Select"
+    draw.text((disp.width * (1/2) - (font.getlength(text) / 2), 12), text, font = font, fill = WHITE)
+
+    draw.rectangle((12, 46, disp.width - 12, 60), fill = WHITE)
+    draw.rectangle((13, 47, disp.width - 13, 59), fill = RED)
+    for i in range(0, menu_size + 1): # displays test for every save
+        draw.text((disp.width * (1/2) - (font.getlength(saves[i]) / 2), 50 + (20 * i)),saves[i], font = font, fill = WHITE)
+    disp.display(img)
+
 if __name__ == "__main__":
     startup_display()
     

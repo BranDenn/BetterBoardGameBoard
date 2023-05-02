@@ -13,7 +13,6 @@ class Stacker(Game):
         self.stop_movement = False
         self.leds.auto_write = False
         self.points = 0
-        self.start_game()
 
     def move(self, row : int, length : int, color : list, delay : float) -> list:
         positions = [None] * length
@@ -142,7 +141,7 @@ class Stacker(Game):
     def start_game(self) -> None:
         self.leds.fill(self.OFF)
         self.leds.show()
-        self.game_display(self.__class__.__name__ + " - LVL: %d" % self.level)
+        self.game_display(self.__class__.__name__ + "-LVL:%d" % self.level)
 #         self.game_display()
         self.update_score()
 
@@ -161,8 +160,28 @@ class Stacker(Game):
                 self.update_score(current_length)
 
                 if self.game_ended(row, current_length):
-                    self.start_game()
                     break
             
         self.finished = True
 
+        self.update_score()
+
+    def main_loop(self) -> None:
+        while self.can_play:
+            self.start_game()
+            current_length = self.STARTING_LENGTH
+
+            for row in range(self.ROWS - 1, -1, -1):
+                color = [randint(0, 255), randint(0, 255), randint(0, 255)]
+                speed = (row + 1) / (self.SPEED_DIVISOR + ((self.level - 1) * 20))
+                positions = self.move(row, current_length, color, speed)
+                current_length -= self.check_for_removal(row, positions, color)
+
+                sleep(0.1)
+                self.stop_movement = False
+                self.update_score(current_length)
+
+                if self.game_ended(row, current_length):
+                    break
+            
+        self.finished = True

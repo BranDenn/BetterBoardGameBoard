@@ -111,6 +111,7 @@ class Animations(Game):
 
         for i in positions:
             self.leds[i] = self.OFF
+        self.leds.show()
 
     # Function to make snake animation (line with defined length that moves)
     def snake_animation(self, delay : float = 0.001, length : int = 5, brightness : float = 1) -> None:
